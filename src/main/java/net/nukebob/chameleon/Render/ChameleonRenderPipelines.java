@@ -1,0 +1,26 @@
+package net.nukebob.chameleon.Render;
+
+import com.mojang.blaze3d.pipeline.BlendFunction;
+import com.mojang.blaze3d.pipeline.ColorTargetState;
+import com.mojang.blaze3d.pipeline.RenderPipeline;
+import net.minecraft.client.renderer.BindGroupLayouts;
+import net.minecraft.client.renderer.RenderPipelines;
+import net.nukebob.chameleon.MCChameleon;
+
+import static net.minecraft.client.renderer.RenderPipelines.ENTITY_SNIPPET;
+
+public class ChameleonRenderPipelines {
+    public static final RenderPipeline ENTITY_GRAY;
+
+    static {
+        ENTITY_GRAY = RenderPipelines.register(RenderPipeline.builder(new RenderPipeline.Snippet[]{ENTITY_SNIPPET})
+                .withLocation("pipeline/entity_gray")
+                        .withFragmentShader(MCChameleon.id("core/entity_gray"))
+                        .withVertexShader("core/entity")
+                .withShaderDefine("ALPHA_CUTOUT", 0.1F)
+                .withShaderDefine("PER_FACE_LIGHTING")
+                .withBindGroupLayout(BindGroupLayouts.SAMPLER1)
+                .withColorTargetState(new ColorTargetState(BlendFunction.TRANSLUCENT))
+                .withCull(false).build());
+    }
+}

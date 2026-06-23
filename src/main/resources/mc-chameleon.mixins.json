@@ -1,0 +1,17 @@
+{
+	"required": true,
+	"package": "net.nukebob.chameleon.mixin",
+	"compatibilityLevel": "JAVA_25",
+	"client": [
+		"AvatarRendererMixin",
+		"CapeLayerMixin",
+		"HumanoidModelMixin",
+		"LivingEntityRendererMixin"
+	],
+	"injectors": {
+		"defaultRequire": 1
+	},
+	"overwrites": {
+		"requireAnnotations": true
+	}
+}
