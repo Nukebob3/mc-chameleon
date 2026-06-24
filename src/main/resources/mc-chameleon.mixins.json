@@ -7,7 +7,7 @@
 		"CapeLayerMixin",
 		"HumanoidModelMixin",
 		"LivingEntityRendererMixin",
-		"PlayerModelMixin"
+		"PlayerSkinMixin"
 	],
 	"injectors": {
 		"defaultRequire": 1
