@@ -15,13 +15,13 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
 @Mixin(AvatarRenderer.class)
 public class AvatarRendererMixin {
-	@Inject(method = "getTextureLocation", at = @At("HEAD"), cancellable = true)
+	@Inject(method = "getTextureLocation(Lnet/minecraft/client/renderer/entity/state/AvatarRenderState;)Lnet/minecraft/resources/Identifier;", at = @At("HEAD"), cancellable = true)
 	private void getTextureLocation(AvatarRenderState state, CallbackInfoReturnable<Identifier> cir) {
 		if (Minecraft.getInstance().level!=null) {
 			Entity entity = Minecraft.getInstance().level.getEntity(state.id);
 			if (entity != null) {
 				String uuid = entity.getStringUUID();
-				if(Minecraft.getInstance().getResourceManager().getResource(MCChameleon.idSkin(uuid)).isPresent())
+				if (Minecraft.getInstance().getTextureManager().getTexture(MCChameleon.idSkin(uuid)) instanceof DynamicTexture)
 					cir.setReturnValue(MCChameleon.idSkin(uuid));
 			}
 		}

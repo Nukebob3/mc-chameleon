@@ -8,7 +8,7 @@ import net.nukebob.chameleon.texture.ColourLocation;
 import java.util.*;
 
 public class Skins {
-    private static Map<UUID, int[]> skinMap = new HashMap<>();
+    private static final Map<UUID, int[]> skinMap = new HashMap<>();
 
     public static void update(UUID uuid, int[] pixels) {
         skinMap.put(uuid, pixels);
@@ -20,8 +20,8 @@ public class Skins {
     }
 
     public static void blank(UUID uuid) {
-        int[] pixels = new int[1632];
-        for (int i = 0; i < 1632; i++) {
+        int[] pixels = new int[1504];
+        for (int i = 0; i < 1504; i++) {
             pixels[i]=0xFFFFFFFF;
         }
         skinMap.put(uuid, pixels);

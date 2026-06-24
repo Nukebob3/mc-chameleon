@@ -29,7 +29,7 @@ public class ChameleonTexture {
     public void init() {
         image = new NativeImage(64, 64, true);
 
-        for (int i = 0; i < 1632; i++) {
+        for (int i = 0; i < 1504; i++) {
             Pixel pixel = pixelIndex(i);
             if (pixel.x>63||pixel.y>63) {
                 continue;

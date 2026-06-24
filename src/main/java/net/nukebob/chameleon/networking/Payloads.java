@@ -9,6 +9,7 @@ import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
 import net.minecraft.resources.Identifier;
 import net.nukebob.chameleon.MCChameleon;
 import net.nukebob.chameleon.texture.ColourLocation;
+import org.jspecify.annotations.NonNull;
 
 import java.util.Arrays;
 import java.util.UUID;
@@ -22,7 +23,7 @@ public class Payloads {
         public static final StreamCodec<RegistryFriendlyByteBuf, ClientboundUpdatePixelsPayload> CODEC = StreamCodec.composite(
                 UUIDUtil.STREAM_CODEC,
                 ClientboundUpdatePixelsPayload::uuid,
-                ByteBufCodecs.INT.apply(ByteBufCodecs.list(1632)).map(
+                ByteBufCodecs.INT.apply(ByteBufCodecs.list(1504)).map(
                         list -> list.stream().mapToInt(Integer::intValue).toArray(),
                         array -> Arrays.stream(array).boxed().toList()
                 ),
@@ -32,7 +33,7 @@ public class Payloads {
 
 
         @Override
-        public Type<? extends CustomPacketPayload> type() {
+        public @NonNull Type<? extends CustomPacketPayload> type() {
             return TYPE;
         }
 
@@ -57,7 +58,7 @@ public class Payloads {
 
 
         @Override
-        public Type<? extends CustomPacketPayload> type() {
+        public @NonNull Type<? extends CustomPacketPayload> type() {
             return TYPE;
         }
     }
@@ -75,7 +76,7 @@ public class Payloads {
 
 
         @Override
-        public Type<? extends CustomPacketPayload> type() {
+        public @NonNull Type<? extends CustomPacketPayload> type() {
             return TYPE;
         }
     }

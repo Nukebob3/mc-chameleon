@@ -25,7 +25,7 @@ public class Networking {
         ClientPlayNetworking.registerGlobalReceiver(Payloads.ClientboundClearPixelsPayload.TYPE, (payload, context) -> {
             context.client().execute(() -> {
                 if (payload.uuid().equals(context.player().getUUID())) {
-                    MCChameleonClient.localSkinCache=new int[1632];
+                    MCChameleonClient.localSkinCache=new int[1504];
                 }
 
                 context.client().getTextureManager().release(MCChameleon.idSkin(payload.uuid().toString()));
