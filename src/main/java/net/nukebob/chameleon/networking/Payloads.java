@@ -15,20 +15,20 @@ import java.util.Arrays;
 import java.util.UUID;
 
 public class Payloads {
-    public record ClientboundUpdatePixelsPayload(UUID uuid, int[] pixels) implements CustomPacketPayload {
+    public record ClientBoundUpdatePixelsPayload(UUID uuid, int[] pixels) implements CustomPacketPayload {
         public static final Identifier UPDATE_PIXELS_PAYLOAD_ID = MCChameleon.id("update_pixels");
 
-        public static final CustomPacketPayload.Type<ClientboundUpdatePixelsPayload> TYPE = new CustomPacketPayload.Type<>(UPDATE_PIXELS_PAYLOAD_ID);
+        public static final CustomPacketPayload.Type<ClientBoundUpdatePixelsPayload> TYPE = new CustomPacketPayload.Type<>(UPDATE_PIXELS_PAYLOAD_ID);
 
-        public static final StreamCodec<RegistryFriendlyByteBuf, ClientboundUpdatePixelsPayload> CODEC = StreamCodec.composite(
+        public static final StreamCodec<RegistryFriendlyByteBuf, ClientBoundUpdatePixelsPayload> CODEC = StreamCodec.composite(
                 UUIDUtil.STREAM_CODEC,
-                ClientboundUpdatePixelsPayload::uuid,
+                ClientBoundUpdatePixelsPayload::uuid,
                 ByteBufCodecs.INT.apply(ByteBufCodecs.list(1504)).map(
                         list -> list.stream().mapToInt(Integer::intValue).toArray(),
                         array -> Arrays.stream(array).boxed().toList()
                 ),
-                ClientboundUpdatePixelsPayload::pixels,
-                ClientboundUpdatePixelsPayload::new
+                ClientBoundUpdatePixelsPayload::pixels,
+                ClientBoundUpdatePixelsPayload::new
         );
 
 
@@ -39,21 +39,21 @@ public class Payloads {
 
     }
 
-    public record ClientboundUpdateSpecificPixelsPayload(UUID uuid, ColourLocation.ColLoc[] pixels) implements CustomPacketPayload {
+    public record ClientBoundUpdateSpecificPixelsPayload(UUID uuid, ColourLocation.ColLoc[] pixels) implements CustomPacketPayload {
         public static final Identifier UPDATE_SPECIFIC_PIXELS_PAYLOAD_ID = MCChameleon.id("update_specific_pixels");
 
-        public static final CustomPacketPayload.Type<ClientboundUpdateSpecificPixelsPayload> TYPE = new CustomPacketPayload.Type<>(UPDATE_SPECIFIC_PIXELS_PAYLOAD_ID);
+        public static final CustomPacketPayload.Type<ClientBoundUpdateSpecificPixelsPayload> TYPE = new CustomPacketPayload.Type<>(UPDATE_SPECIFIC_PIXELS_PAYLOAD_ID);
 
-        public static final StreamCodec<RegistryFriendlyByteBuf, ClientboundUpdateSpecificPixelsPayload> CODEC = StreamCodec.composite(
+        public static final StreamCodec<RegistryFriendlyByteBuf, ClientBoundUpdateSpecificPixelsPayload> CODEC = StreamCodec.composite(
                 UUIDUtil.STREAM_CODEC,
-                ClientboundUpdateSpecificPixelsPayload::uuid,
+                ClientBoundUpdateSpecificPixelsPayload::uuid,
 
                 ColourLocation.ColLoc.STREAM_CODEC.apply(ByteBufCodecs.list()).map(
                         list -> list.toArray(new ColourLocation.ColLoc[0]),
-                        array -> Arrays.asList(array)
+                        Arrays::asList
                 ),
-                ClientboundUpdateSpecificPixelsPayload::pixels,
-                ClientboundUpdateSpecificPixelsPayload::new
+                ClientBoundUpdateSpecificPixelsPayload::pixels,
+                ClientBoundUpdateSpecificPixelsPayload::new
         );
 
 
@@ -63,15 +63,57 @@ public class Payloads {
         }
     }
 
-    public record ClientboundClearPixelsPayload(UUID uuid) implements CustomPacketPayload {
+    public record ClientBoundClearPixelsPayload(UUID uuid) implements CustomPacketPayload {
         public static final Identifier CLEAR_PIXELS_PAYLOAD_ID = MCChameleon.id("clear_pixels");
 
-        public static final CustomPacketPayload.Type<ClientboundClearPixelsPayload> TYPE = new CustomPacketPayload.Type<>(CLEAR_PIXELS_PAYLOAD_ID);
+        public static final CustomPacketPayload.Type<ClientBoundClearPixelsPayload> TYPE = new CustomPacketPayload.Type<>(CLEAR_PIXELS_PAYLOAD_ID);
 
-        public static final StreamCodec<RegistryFriendlyByteBuf, ClientboundClearPixelsPayload> CODEC = StreamCodec.composite(
+        public static final StreamCodec<RegistryFriendlyByteBuf, ClientBoundClearPixelsPayload> CODEC = StreamCodec.composite(
                 UUIDUtil.STREAM_CODEC,
-                ClientboundClearPixelsPayload::uuid,
-                ClientboundClearPixelsPayload::new
+                ClientBoundClearPixelsPayload::uuid,
+                ClientBoundClearPixelsPayload::new
+        );
+
+
+        @Override
+        public @NonNull Type<? extends CustomPacketPayload> type() {
+            return TYPE;
+        }
+    }
+
+    public record ServerBoundUpdatePixelsPayload(int[] pixels) implements CustomPacketPayload {
+        public static final Identifier UPDATE_PIXELS_PAYLOAD = MCChameleon.id("update_pixels_client");
+
+        public static final CustomPacketPayload.Type<ServerBoundUpdatePixelsPayload> TYPE = new CustomPacketPayload.Type<>(UPDATE_PIXELS_PAYLOAD);
+
+        public static final StreamCodec<RegistryFriendlyByteBuf, ServerBoundUpdatePixelsPayload> CODEC = StreamCodec.composite(
+                ByteBufCodecs.INT.apply(ByteBufCodecs.list(1504)).map(
+                        list -> list.stream().mapToInt(Integer::intValue).toArray(),
+                        array -> Arrays.stream(array).boxed().toList()
+                ),
+                ServerBoundUpdatePixelsPayload::pixels,
+                ServerBoundUpdatePixelsPayload::new
+        );
+
+
+        @Override
+        public @NonNull Type<? extends CustomPacketPayload> type() {
+            return TYPE;
+        }
+    }
+
+    public record ServerBoundUpdateSpecificPixelsPayload(ColourLocation.ColLoc[] pixels) implements CustomPacketPayload {
+        public static final Identifier UPDATE_SPECIFIC_PIXELS_PAYLOAD_ID = MCChameleon.id("update_specific_pixels_client");
+
+        public static final CustomPacketPayload.Type<ServerBoundUpdateSpecificPixelsPayload> TYPE = new CustomPacketPayload.Type<>(UPDATE_SPECIFIC_PIXELS_PAYLOAD_ID);
+
+        public static final StreamCodec<RegistryFriendlyByteBuf, ServerBoundUpdateSpecificPixelsPayload> CODEC = StreamCodec.composite(
+                ColourLocation.ColLoc.STREAM_CODEC.apply(ByteBufCodecs.list()).map(
+                        list -> list.toArray(new ColourLocation.ColLoc[0]),
+                        Arrays::asList
+                ),
+                ServerBoundUpdateSpecificPixelsPayload::pixels,
+                ServerBoundUpdateSpecificPixelsPayload::new
         );
 
 
@@ -82,8 +124,11 @@ public class Payloads {
     }
 
     public static void register() {
-        PayloadTypeRegistry.clientboundPlay().register(Payloads.ClientboundUpdatePixelsPayload.TYPE, Payloads.ClientboundUpdatePixelsPayload.CODEC);
-        PayloadTypeRegistry.clientboundPlay().register(Payloads.ClientboundUpdateSpecificPixelsPayload.TYPE, Payloads.ClientboundUpdateSpecificPixelsPayload.CODEC);
-        PayloadTypeRegistry.clientboundPlay().register(Payloads.ClientboundClearPixelsPayload.TYPE, Payloads.ClientboundClearPixelsPayload.CODEC);
+        PayloadTypeRegistry.clientboundPlay().register(ClientBoundUpdatePixelsPayload.TYPE, ClientBoundUpdatePixelsPayload.CODEC);
+        PayloadTypeRegistry.clientboundPlay().register(ClientBoundUpdateSpecificPixelsPayload.TYPE, ClientBoundUpdateSpecificPixelsPayload.CODEC);
+        PayloadTypeRegistry.clientboundPlay().register(ClientBoundClearPixelsPayload.TYPE, ClientBoundClearPixelsPayload.CODEC);
+
+        PayloadTypeRegistry.serverboundPlay().register(ServerBoundUpdatePixelsPayload.TYPE, ServerBoundUpdatePixelsPayload.CODEC);
+        PayloadTypeRegistry.serverboundPlay().register(ServerBoundUpdateSpecificPixelsPayload.TYPE, ServerBoundUpdateSpecificPixelsPayload.CODEC);
     }
 }

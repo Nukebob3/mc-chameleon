@@ -15,7 +15,7 @@ public class Skins {
 
         PlayerLookup.all(MCChameleon.SERVER).forEach(player -> {
             if (!player.getUUID().equals(uuid))
-                ServerPlayNetworking.send(player, new Payloads.ClientboundUpdatePixelsPayload(uuid, pixels));
+                ServerPlayNetworking.send(player, new Payloads.ClientBoundUpdatePixelsPayload(uuid, pixels));
         });
     }
 
@@ -27,7 +27,7 @@ public class Skins {
         skinMap.put(uuid, pixels);
 
         PlayerLookup.all(MCChameleon.SERVER).forEach(player -> {
-            ServerPlayNetworking.send(player, new Payloads.ClientboundUpdatePixelsPayload(uuid, pixels));
+            ServerPlayNetworking.send(player, new Payloads.ClientBoundUpdatePixelsPayload(uuid, pixels));
         });
     }
 
@@ -40,7 +40,7 @@ public class Skins {
 
         PlayerLookup.all(MCChameleon.SERVER).forEach(player -> {
             if (!player.getUUID().equals(uuid))
-                ServerPlayNetworking.send(player, new Payloads.ClientboundUpdateSpecificPixelsPayload(uuid, update));
+                ServerPlayNetworking.send(player, new Payloads.ClientBoundUpdateSpecificPixelsPayload(uuid, update));
         });
     }
 
@@ -48,7 +48,7 @@ public class Skins {
         skinMap.remove(uuid);
 
         PlayerLookup.all(MCChameleon.SERVER).forEach(player -> {
-            ServerPlayNetworking.send(player, new Payloads.ClientboundClearPixelsPayload(uuid));
+            ServerPlayNetworking.send(player, new Payloads.ClientBoundClearPixelsPayload(uuid));
         });
     }
 }

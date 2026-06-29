@@ -1,4 +1,4 @@
-package net.nukebob.chameleon.accessor;
+package net.nukebob.chameleon.setter;
 
 import java.util.ArrayList;
 import java.util.List;

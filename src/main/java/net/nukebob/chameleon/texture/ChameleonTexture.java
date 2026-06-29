@@ -5,25 +5,29 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.texture.DynamicTexture;
 import net.minecraft.resources.Identifier;
 import net.nukebob.chameleon.MCChameleon;
+import net.nukebob.chameleon.MCChameleonClient;
 
+import java.util.HashMap;
+import java.util.Map;
 import java.util.UUID;
 
 public class ChameleonTexture {
+    public static Map<UUID, ChameleonTexture> skins = new HashMap<>();
+
     private Identifier textureId;
     private DynamicTexture dynamicTexture;
     private NativeImage image;
 
     private final UUID uuid;
 
-    public ChameleonTexture(UUID uuid) {
-        this.uuid = uuid;
+    public static ChameleonTexture getChameleonTexture(UUID uuid) {
+        return skins.computeIfAbsent(uuid, ChameleonTexture::new);
     }
 
-    public Identifier getTextureId() {
-        if (textureId == null) {
-            init();
-        }
-        return textureId;
+    public ChameleonTexture(UUID uuid) {
+        this.uuid = uuid;
+
+        load();
     }
 
     public void init() {
@@ -31,54 +35,87 @@ public class ChameleonTexture {
 
         for (int i = 0; i < 1504; i++) {
             Pixel pixel = pixelIndex(i);
-            if (pixel.x>63||pixel.y>63) {
-                continue;
-            }
+            if (pixel.x>63||pixel.y>63) continue;
             image.setPixel(pixel.x, pixel.y, 0xFFFFFFFF);
         }
 
         dynamicTexture = new DynamicTexture(() -> "mc-chameleon-skin_"+uuid.toString(), image);
-
         textureId = MCChameleon.idSkin(uuid.toString());
     }
 
     public void load() {
         this.textureId = MCChameleon.idSkin(uuid.toString());
-        if (Minecraft.getInstance().getTextureManager().getTexture(textureId) instanceof DynamicTexture existingTexture) {
-            this.image = existingTexture.getPixels();
+        var textureManager = Minecraft.getInstance().getTextureManager();
 
-            this.dynamicTexture = existingTexture;
+        if (textureManager.getTexture(textureId) instanceof DynamicTexture existingTexture) {
+            NativeImage existingImage = existingTexture.getPixels();
+
+            if (existingImage.getPointer() != 0) {
+                this.image = new NativeImage(64, 64, true);
+                this.image.copyFrom(existingImage);
+
+                this.dynamicTexture = new DynamicTexture(() -> "mc-chameleon-skin_" + uuid, this.image);
+                return;
+            }
         }
 
-        else init();
+         init();
     }
 
     public void upload() {
         Minecraft.getInstance()
                 .getTextureManager()
                 .register(textureId, dynamicTexture);
+
+        if (this.dynamicTexture != null) {
+            this.dynamicTexture.upload();
+        }
+    }
+
+    public void ensureAllocated() {
+        if (image == null || image.getPointer() == 0) {
+            init();
+        }
     }
 
     public void updatePixels(int[] pixels) {
+        ensureAllocated();
         for (int i = 0; i < pixels.length; i++) {
             Pixel pixel = pixelIndex(i);
             image.setPixel(pixel.x, pixel.y, pixels[i]);
         }
+        MCChameleonClient.localSkinCache = pixels;
         upload();
     }
 
     public void updatePixelsSpecific(ColourLocation.ColLoc[] pixels) {
+        ensureAllocated();
+
+        if (MCChameleonClient.localSkinCache == null || MCChameleonClient.localSkinCache.length < 1504) {
+            MCChameleonClient.localSkinCache = new int[1504];
+        }
+
         for (ColourLocation.ColLoc colourLocation : pixels) {
+            if (colourLocation.location() == -1 || colourLocation.location() >= MCChameleonClient.localSkinCache.length) continue;
+
             Pixel pixel = pixelIndex(colourLocation.location());
             image.setPixel(pixel.x, pixel.y, colourLocation.colour());
+            MCChameleonClient.localSkinCache[colourLocation.location()] = colourLocation.colour();
         }
         upload();
     }
 
     public void updatePixel(ColourLocation.ColLoc colourLocation) {
+        if (colourLocation.location() == -1) return;
+        ensureAllocated();
+
+        if (MCChameleonClient.localSkinCache == null || MCChameleonClient.localSkinCache.length < 1504) {
+            MCChameleonClient.localSkinCache = new int[1504];
+        }
+
         Pixel pixel = pixelIndex(colourLocation.location());
         image.setPixel(pixel.x, pixel.y, colourLocation.colour());
-
+        MCChameleonClient.localSkinCache[colourLocation.location()] = colourLocation.colour();
         upload();
     }
 
@@ -95,7 +132,7 @@ public class ChameleonTexture {
         return faceOffset.add(posOnFace);
     }
 
-    private static int getPart(int i) {
+    public static int getPart(int i) {
         if (i<8*8*2+4*8*2+8*4*2) {
             return 0;
         } else if (i<8*8*2+4*8*2+8*4*2 + 8*12*2+4*12*2+4*8*2) {
@@ -105,7 +142,7 @@ public class ChameleonTexture {
         }
     }
 
-    private static int getLocalIndex(int i, int part) {
+    public static int getLocalIndex(int i, int part) {
         int localIndex = i;
         if (part >= 1) localIndex -= 8*8*2+4*8*2+8*4*2;
         if (part >= 2) localIndex -= 8*12*2 + 4*12*2 + 4*8*2;
@@ -115,7 +152,7 @@ public class ChameleonTexture {
         return localIndex;
     }
 
-    private static int getFaceLocalIndex(int i, int face, int part) {
+    public static int getFaceLocalIndex(int i, int face, int part) {
         int localIndex = i;
         if (face >= 1) localIndex -= getFaceSize(part, 0);
         if (face >= 2) localIndex -= getFaceSize(part, 1);
@@ -125,7 +162,7 @@ public class ChameleonTexture {
         return localIndex;
     }
 
-    private static int getFace(int part, int localIndex) {
+    public static int getFace(int part, int localIndex) {
         int sizeSum = 0;
         for (int i=0; i<6; i++) {
             sizeSum+=getFaceSize(part,i);
@@ -134,7 +171,7 @@ public class ChameleonTexture {
         return 0;
     }
 
-    private static Pixel getFaceDimension(int part, int face) {
+    public static Pixel getFaceDimension(int part, int face) {
         return switch (part) {
             case 0 -> switch (face) {
                 case 0,2 -> new Pixel(8,8);
@@ -180,5 +217,36 @@ public class ChameleonTexture {
             case 5 -> new Pixel(getFaceDimension(part, 4).x,-getFaceDimension(part,4).y);
             default -> new Pixel(0);
         });
+    }
+
+    public static int reversePixelIndex(int x, int y) {
+        for (int part = 0; part < 6; part++) {
+            for (int face = 0; face < 6; face++) {
+                Pixel faceOffset = getFaceOffset(part, face);
+                Pixel faceDimension = getFaceDimension(part, face);
+
+                int localX = x - faceOffset.x;
+                int localY = y - faceOffset.y;
+
+                if (localX >= 0 && localX < faceDimension.x && localY >= 0 && localY < faceDimension.y) {
+                    int pos = localY * faceDimension.x + localX;
+                    int faceLocalBase = 0;
+                    for (int f = 0; f < face; f++) {
+                        faceLocalBase += getFaceSize(part, f);
+                    }
+                    int localIndex = faceLocalBase + pos;
+
+                    int partBase = 0;
+                    if (part >= 1) partBase += 8*8*2+4*8*2+8*4*2;
+                    if (part >= 2) partBase += 8*12*2 + 4*12*2 + 4*8*2;
+                    if (part >= 3) partBase += 4*4*2 + 4*12*4;
+                    if (part >= 4) partBase += 4*4*2 + 4*12*4;
+                    if (part == 5) partBase += 4*4*2 + 4*12*4;
+
+                    return partBase + localIndex;
+                }
+            }
+        }
+        return -1;
     }
 }

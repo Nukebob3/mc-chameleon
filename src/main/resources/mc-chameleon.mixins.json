@@ -1,18 +1,23 @@
 {
-	"required": true,
-	"package": "net.nukebob.chameleon.mixin",
-	"compatibilityLevel": "JAVA_25",
-	"client": [
-		"AvatarRendererMixin",
-		"CapeLayerMixin",
-		"HumanoidModelMixin",
-		"LivingEntityRendererMixin",
-		"PlayerSkinMixin"
-	],
-	"injectors": {
-		"defaultRequire": 1
-	},
-	"overwrites": {
-		"requireAnnotations": true
+  "required": true,
+  "package": "net.nukebob.chameleon.mixin",
+  "compatibilityLevel": "JAVA_25",
+  "client": [
+    "AvatarRendererMixin",
+    "CameraOrbitMixin",
+    "CapeLayerMixin",
+    "EntityRenderDispatcherMixin",
+    "HumanoidModelMixin",
+    "LivingEntityRendererMixin",
+    "MouseHandlerOrbitMixin",
+    "PlayerSkinMixin",
+    "ScrollWheelHandlerMixin",
+    "ShadowFeatureRendererMixin"
+  ],
+  "injectors": {
+    "defaultRequire": 1
+  },
+  "overwrites": {
+    "requireAnnotations": true
 	}
 }
