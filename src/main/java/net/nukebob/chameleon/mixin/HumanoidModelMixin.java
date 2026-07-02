@@ -66,11 +66,11 @@ public class HumanoidModelMixin {
         if (tracker==null) return;
         Poses pose = tracker.getPose();
         float factor = tracker.getProgress();
-        if (pose!=null&&factor!=0) pose(pose, model, factor);
+        if (pose!=null&&factor!=0) mc_chameleon$pose(pose, model, factor);
     }
 
     @Unique
-    private void pose(Poses pose, HumanoidModel<?> model, float factor) {
+    private void mc_chameleon$pose(Poses pose, HumanoidModel<?> model, float factor) {
         //root
         model.root().xRot=(float) Math.toRadians(pose.getRootRot().getX())*factor + model.root().xRot*(1-factor);
         model.root().yRot+=(float) Math.toRadians(pose.getRootRot().getY())*factor;

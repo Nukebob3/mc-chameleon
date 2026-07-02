@@ -1,18 +1,21 @@
 package net.nukebob.chameleon;
 
-import com.mojang.blaze3d.platform.InputConstants;
 import net.fabricmc.api.ClientModInitializer;
+import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientLifecycleEvents;
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents;
-import net.fabricmc.fabric.api.client.keymapping.v1.KeyMappingHelper;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
 import net.fabricmc.fabric.api.client.rendering.v1.level.LevelRenderEvents;
 import net.minecraft.client.KeyMapping;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.gui.components.debug.DebugScreenEntries;
+import net.minecraft.client.gui.components.debug.DebugScreenEntryStatus;
+import net.minecraft.resources.Identifier;
 import net.minecraft.world.entity.Entity;
 import net.nukebob.chameleon.camera.ChameleonOrbitCamera;
 import net.nukebob.chameleon.gameplay.IdleTracker;
 import net.nukebob.chameleon.gameplay.PoseTracker;
 import net.nukebob.chameleon.gameplay.Poses;
+import net.nukebob.chameleon.keybind.Keybinds;
 import net.nukebob.chameleon.networking.Networking;
 import net.nukebob.chameleon.networking.Payloads;
 import net.nukebob.chameleon.render.ChameleonOutputTargets;
@@ -20,7 +23,6 @@ import net.nukebob.chameleon.screen.PaintScreen;
 import net.nukebob.chameleon.sound.ChameleonSounds;
 import net.nukebob.chameleon.texture.ChameleonTexture;
 import net.nukebob.chameleon.util.UvPicker;
-import org.lwjgl.glfw.GLFW;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -46,6 +48,13 @@ public class MCChameleonClient implements ClientModInitializer {
     public void onInitializeClient() {
         Networking.registerClientReceivers();
         ChameleonSounds.initialize();
+        Keybinds.init();
+
+        ClientLifecycleEvents.CLIENT_STARTED.register(client -> {
+            for (Identifier entryId : DebugScreenEntries.allEntries().keySet()) {
+                client.debugEntries.setStatus(entryId, DebugScreenEntryStatus.NEVER);
+            }
+        });
 
         LevelRenderEvents.BEFORE_GIZMOS.register((ctx) -> {
             ChameleonOutputTargets.clearUvPickerTarget();
@@ -60,107 +69,47 @@ public class MCChameleonClient implements ClientModInitializer {
             }
         });
 
-        KeyMapping.Category CATEGORY = KeyMapping.Category.register(
-                MCChameleon.id("hider")
-        );
-
-        KeyMapping openPaintScreen = KeyMappingHelper.registerKeyMapping(
-                new KeyMapping(
-                        "key.mc-chameleon.open_paint",
-                        InputConstants.Type.KEYSYM,
-                        GLFW.GLFW_KEY_F,
-                        CATEGORY
-                ));
-        KeyMapping openPoseScreen = KeyMappingHelper.registerKeyMapping(
-                new KeyMapping(
-                        "key.mc-chameleon.pose",
-                        InputConstants.Type.KEYSYM,
-                        GLFW.GLFW_KEY_R,
-                        CATEGORY
-                ));
-        KeyMapping whistle = KeyMappingHelper.registerKeyMapping(
-                new KeyMapping(
-                        "key.mc-chameleon.whistle",
-                        InputConstants.Type.KEYSYM,
-                        GLFW.GLFW_KEY_1,
-                        CATEGORY
-                ));
-        KeyMapping cameraLock = KeyMappingHelper.registerKeyMapping(
-                new KeyMapping(
-                        "key.mc-chameleon.cameraLock",
-                        InputConstants.Type.KEYSYM,
-                        GLFW.GLFW_KEY_5,
-                        CATEGORY
-                ));
-        KeyMapping freeCam = KeyMappingHelper.registerKeyMapping(
-                new KeyMapping(
-                        "key.mc-chameleon.freeCam",
-                        InputConstants.Type.KEYSYM,
-                        GLFW.GLFW_KEY_4,
-                        CATEGORY
-                ));
-
         ClientTickEvents.END_CLIENT_TICK.register(client -> {
             if (client.player==null) return;
 
-            if (openPaintScreen.isDown()) {
-                if (!wasOpenPaintScreenDown) {
-                    if (ChameleonTexture.skins.containsKey(client.player.getUUID())) {
-                        wasOpenPaintScreenDown=true;
-                        client.setScreenAndShow(new PaintScreen());
-                    }
-                    wasOpenPaintScreenDown=true;
-                }
-            } else {
-                wasOpenPaintScreenDown = false;
-            }
-            if (whistle.isDown()) {
-                if (!wasWhistleDown) {
-                    if (ChameleonTexture.skins.containsKey(client.player.getUUID())) {
-                        ClientPlayNetworking.send(new Payloads.ServerBoundWhistle());
-                    }
-                    wasWhistleDown = true;
-                }
-            } else {
-                wasWhistleDown = false;
-            }
+            wasOpenPaintScreenDown = handleKeyEdge(Keybinds.openPaintScreen, wasOpenPaintScreenDown, () -> {
+                if (ChameleonTexture.skins.containsKey(client.player.getUUID())) client.setScreenAndShow(new PaintScreen());
+            });
+            wasWhistleDown = handleKeyEdge(Keybinds.whistle, wasWhistleDown, () -> {
+                if (ChameleonTexture.skins.containsKey(client.player.getUUID())) ClientPlayNetworking.send(new Payloads.ServerBoundWhistle());
+            });
+
             ChameleonOrbitCamera camera = ChameleonOrbitCamera.getInstance();
             if (camera==null) return;
-            if (camera.isActive()) {
-                camera.tick();
-            }
-            if (cameraLock.isDown()) {
-                if (!wasCameraLockDown&&client.getCameraEntity()!=null) {
-                    if (!camera.isActive()) {
-                        ChameleonOrbitCamera.recreate();
-                        camera = ChameleonOrbitCamera.getInstance();
-                        camera.setActive(true);
-                        camera.setInvisible(true);
-                        camera.syncToEntityLookDirection(client.getCameraEntity().getYRot(), client.getCameraEntity().getXRot());
-                        if (client.level!=null) client.level.addEntity(camera);
-                        client.setCameraEntity(camera);
-                    } else {
-                        camera.setActive(false);
-                        if (client.level!=null) client.level.removeEntity(camera.getId(), Entity.RemovalReason.DISCARDED);
-                        client.setCameraEntity(client.player);
-                    }
-                    wasCameraLockDown = true;
+            if (camera.isActive()) camera.tick();
+
+            wasCameraLockDown = handleKeyEdge(Keybinds.cameraLock, wasCameraLockDown, () -> {
+                if (client.getCameraEntity() == null) return;
+                if (!camera.isActive()) {
+                    ChameleonOrbitCamera.recreate();
+                    ChameleonOrbitCamera cam = ChameleonOrbitCamera.getInstance();
+                    cam.setActive(true);
+                    cam.setInvisible(true);
+                    cam.syncToEntityLookDirection(client.getCameraEntity().getYRot(), client.getCameraEntity().getXRot());
+                    if (client.level != null) client.level.addEntity(cam);
+                    client.setCameraEntity(cam);
+                } else {
+                    camera.setActive(false);
+                    if (client.level != null) client.level.removeEntity(camera.getId(), Entity.RemovalReason.DISCARDED);
+                    client.setCameraEntity(client.player);
                 }
-            } else {
-                wasCameraLockDown = false;
-            }
-            if (freeCam.isDown()) {
-                if (!wasFreeCamDown&&camera.isActive()) {
+            });
+
+            wasFreeCamDown = handleKeyEdge(Keybinds.freeCam, wasFreeCamDown, () -> {
+                if (camera.isActive()) {
                     camera.setFreeCam(!camera.isInFreeCam());
                     camera.setPos(camera.getNonFreeCamPosition());
-                    wasFreeCamDown = true;
                 }
-            } else {
-                wasFreeCamDown = false;
-            }
+            });
+
             UUID uuid = client.player.getUUID();
             PoseTracker poseTracker = POSES.computeIfAbsent(uuid, k -> new PoseTracker());
-            if (openPoseScreen.consumeClick()) {
+            if (Keybinds.openPoseScreen.consumeClick()) {
                 Poses currentPose = poseTracker.getTargetPos();
 
                 Poses nextPose = (currentPose == null) ? Poses.T_POSE : switch (currentPose) {
@@ -186,5 +135,13 @@ public class MCChameleonClient implements ClientModInitializer {
             }
             else IdleTracker.preventDisable(client.player);
         });
+    }
+
+    private static boolean handleKeyEdge(KeyMapping key, boolean wasDown, Runnable onPress) {
+        if (key.isDown()) {
+            if (!wasDown) onPress.run();
+            return true;
+        }
+        return false;
     }
 }

@@ -1,0 +1,10 @@
+{
+  "key.category.mc-chameleon.hider": "Chameleon",
+  "key.mc-chameleon.cameraLock": "Lock Camera",
+  "key.mc-chameleon.free_cam": "Toggle Free Cam",
+  "key.mc-chameleon.open_paint": "Paint",
+  "key.mc-chameleon.pose": "Pose",
+  "key.mc-chameleon.whistle": "Whistle",
+
+  "lock.mc-chameleon.reason": "Locked by MC Chameleon"
+}

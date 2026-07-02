@@ -28,6 +28,8 @@ public final class ChameleonOrbitCamera extends AbstractClientPlayer {
     public ClientInput input;
     private boolean isFreeCam;
 
+    private Player spectateWho;
+
     private static ChameleonOrbitCamera instance;
 
     public ChameleonOrbitCamera(int id) {
@@ -37,6 +39,8 @@ public final class ChameleonOrbitCamera extends AbstractClientPlayer {
         setPose(Pose.SWIMMING);
         getAbilities().flying = true;
         input = new KeyboardInput(Minecraft.getInstance().options);
+
+        spectateWho = null;
     }
 
     public static ChameleonOrbitCamera getInstance() {
@@ -59,6 +63,10 @@ public final class ChameleonOrbitCamera extends AbstractClientPlayer {
 
         player.setYHeadRot(yaw);
         player.yHeadRotO = yaw;
+    }
+
+    public void setSpectatorTarget(Player target) {
+        this.spectateWho = target;
     }
 
     @Override
@@ -87,7 +95,7 @@ public final class ChameleonOrbitCamera extends AbstractClientPlayer {
                 strafeInput += this.input.keyPresses.right() ? 1 : 0;
                 forwardInput += this.input.keyPresses.backward() ? -1 : 0;
 
-                double speed = 0.5;
+                double speed = 0.1;
 
                 double motionX = (fwdX * forwardInput - strafeX * strafeInput) * speed;
                 double motionY = (fwdY * forwardInput) * speed;

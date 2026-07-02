@@ -10,7 +10,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 @Mixin(GameRenderer.class)
 public class GameRendererMixin {
     @Inject(method = "shouldRenderBlockOutline", at = @At("HEAD"), cancellable = true)
-    private void disableBlockOutline(CallbackInfoReturnable<Boolean> cir) {
+    private void mc_chameleon$disableBlockOutline(CallbackInfoReturnable<Boolean> cir) {
         if (ChameleonOrbitCamera.getInstance().isActive()) {
             cir.setReturnValue(false);
         }

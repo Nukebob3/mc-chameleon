@@ -6,14 +6,19 @@
     "AvatarRendererMixin",
     "CameraOrbitMixin",
     "CapeLayerMixin",
+    "CycleButtonBuilderMixin",
     "EntityRenderDispatcherMixin",
     "GameRendererMixin",
     "HudMixin",
     "HumanoidModelMixin",
     "HumanoidRenderStateMixin",
+    "KeyBindsListKeyEntryMixin",
+    "KeyMappingMixin",
     "LevelExtractorMixin",
     "LivingEntityRendererMixin",
     "MouseHandlerOrbitMixin",
+    "OptionInstanceMixin",
+    "OptionsMixin",
     "PlayerSkinMixin",
     "ScrollWheelHandlerMixin",
     "ShadowFeatureRendererMixin"
@@ -25,6 +30,7 @@
     "requireAnnotations": true
   },
   "mixins": [
-    "EntityMixin"
+    "EntityMixin",
+    "LivingEntityMixin"
   ]
 }

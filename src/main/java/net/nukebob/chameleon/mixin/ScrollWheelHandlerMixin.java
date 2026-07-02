@@ -11,7 +11,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 @Mixin(ScrollWheelHandler.class)
 public class ScrollWheelHandlerMixin {
     @Inject(method = "onMouseScroll", at = @At("HEAD"), cancellable = true)
-    private void zoom(double scaledXScrollOffset, double scaledYScrollOffset, CallbackInfoReturnable<Vector2i> cir) {
+    private void mc_chameleon$zoom(double scaledXScrollOffset, double scaledYScrollOffset, CallbackInfoReturnable<Vector2i> cir) {
         ChameleonOrbitCamera.getInstance().setDistance((float) (ChameleonOrbitCamera.getInstance().getDistance()-0.25*scaledYScrollOffset));
         if (ChameleonOrbitCamera.getInstance().isActive()) cir.setReturnValue(new Vector2i());
     }

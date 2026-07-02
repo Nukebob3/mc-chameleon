@@ -12,7 +12,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 @Mixin(Hud.class)
 public class HudMixin {
     @Inject(method = "getCameraPlayer", at = @At("HEAD"), cancellable = true)
-    private void hudForPlayer(CallbackInfoReturnable<Player> cir) {
+    private void mc_chameleon$hudForPlayer(CallbackInfoReturnable<Player> cir) {
         if (ChameleonOrbitCamera.getInstance().isActive()) {
             cir.setReturnValue(Minecraft.getInstance().player);
         }

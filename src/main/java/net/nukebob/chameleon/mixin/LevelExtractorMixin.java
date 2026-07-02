@@ -27,7 +27,7 @@ public abstract class LevelExtractorMixin {
     private LevelRenderState levelRenderState;
 
     @Inject(method = "extractVisibleEntities", at = @At("TAIL"))
-    private void addClientPlayer(Camera camera, Frustum frustum, DeltaTracker deltaTracker, LevelRenderState output, CallbackInfo ci) {
+    private void mc_chameleon$addClientPlayer(Camera camera, Frustum frustum, DeltaTracker deltaTracker, LevelRenderState output, CallbackInfo ci) {
         if (ChameleonOrbitCamera.getInstance().isActive()) {
             float partialTick = deltaTracker.getGameTimeDeltaPartialTick(false);
             EntityRenderState state = extractEntity(Minecraft.getInstance().player, partialTick);
