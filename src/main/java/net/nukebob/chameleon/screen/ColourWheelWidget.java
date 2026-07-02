@@ -12,6 +12,7 @@ import net.minecraft.client.sounds.SoundManager;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.Identifier;
 import net.nukebob.chameleon.MCChameleon;
+import net.nukebob.chameleon.util.ColourUtil;
 import org.jspecify.annotations.NonNull;
 
 import java.util.function.Consumer;
@@ -21,7 +22,7 @@ public class ColourWheelWidget extends AbstractWidget {
     private static DynamicTexture wheelTexture;
 
     private float hue = 0f;
-    private float saturation = 100f;
+    private float saturation = 1f;
     private boolean dragging = false;
 
     private float xSelected;
@@ -38,11 +39,7 @@ public class ColourWheelWidget extends AbstractWidget {
         this.ySelected = 0f;
 
 
-        setColour(colour);
-    }
-
-    public int[] getHueOnlyRgb(float saturationOverride, float valueOverride) {
-        return hsvToRgb(hue, saturationOverride, valueOverride);
+        setColour(colour, true);
     }
 
     private static void ensureWheelTexture(int size) {
@@ -61,7 +58,7 @@ public class ColourWheelWidget extends AbstractWidget {
                     float angle = (float) Math.toDegrees(Math.atan2(dy, dx));
                     if (angle < 0) angle += 360f;
                     float sat = Math.min(100f, (dist / radius) * 100f);
-                    int[] rgb = hsvToRgb(angle, sat, 100f);
+                    int[] rgb = ColourUtil.hsvToRgb(angle, sat, 100f);
                     int abgr = 0xFF000000 | (rgb[2] << 16) | (rgb[1] << 8) | rgb[0];
                     image.setPixel(x, y, abgr);
                 } else {
@@ -75,43 +72,12 @@ public class ColourWheelWidget extends AbstractWidget {
         Minecraft.getInstance().getTextureManager().register(wheelTextureId, wheelTexture);
     }
 
-    public static int[] hsvToRgb(float h, float s, float v) {
-        s /= 100f;
-        v /= 100f;
-        float c = v * s;
-        float x = c * (1 - Math.abs(((h / 60f) % 2) - 1));
-        float m = v - c;
-        float r, g, b;
-        if (h < 60) { r = c; g = x; b = 0; }
-        else if (h < 120) { r = x; g = c; b = 0; }
-        else if (h < 180) { r = 0; g = c; b = x; }
-        else if (h < 240) { r = 0; g = x; b = c; }
-        else if (h < 300) { r = x; g = 0; b = c; }
-        else { r = c; g = 0; b = x; }
-        return new int[]{
-                Math.round((r + m) * 255),
-                Math.round((g + m) * 255),
-                Math.round((b + m) * 255)
-        };
-    }
+    public void setColour(int colour, boolean quiet) {
+        int[] rgb = ColourUtil.intToRgb(colour);
 
-    public void setSaturationQuiet(float saturation) {
-        this.saturation = Math.max(0f, Math.min(100f, saturation));
-
-        double angleRad = Math.toRadians(hue);
-        double normDist = this.saturation / 100.0;
-        this.xSelected = (float) (Math.cos(angleRad) * normDist);
-        this.ySelected = (float) (Math.sin(angleRad) * normDist);
-    }
-
-    public void setColour(int colour) {
-        int b = (colour >> 16) & 0xFF;
-        int g = (colour >> 8) & 0xFF;
-        int r = colour & 0xFF;
-
-        float[] hs = rgbToHueSat(r, g, b);
-        this.hue = hs[0];
-        this.saturation = hs[1];
+        int[] hsv = ColourUtil.rgbToHsv(rgb[0],rgb[1],rgb[2]);
+        this.hue = hsv[0];
+        this.saturation = hsv[1];
 
         double angleRad = Math.toRadians(hue);
         double normDist = saturation / 100.0;
@@ -119,41 +85,11 @@ public class ColourWheelWidget extends AbstractWidget {
         this.xSelected = (float) (Math.cos(angleRad) * normDist);
         this.ySelected = (float) (Math.sin(angleRad) * normDist);
 
-        onColourChanged.accept(getSelectedRgb());
-    }
-
-    public int[] getPureHueRgb() {
-        return hsvToRgb(hue, 100f, 100f);
-    }
-
-    private static float[] rgbToHueSat(int r, int g, int b) {
-        float rf = r / 255f;
-        float gf = g / 255f;
-        float bf = b / 255f;
-
-        float max = Math.max(rf, Math.max(gf, bf));
-        float min = Math.min(rf, Math.min(gf, bf));
-        float delta = max - min;
-
-        float hue;
-        if (delta < 1e-6f) {
-            hue = 0f;
-        } else if (max == rf) {
-            hue = 60f * (((gf - bf) / delta) % 6f);
-        } else if (max == gf) {
-            hue = 60f * (((bf - rf) / delta) + 2f);
-        } else {
-            hue = 60f * (((rf - gf) / delta) + 4f);
-        }
-        if (hue < 0) hue += 360f;
-
-        float saturation = max < 1e-6f ? 0f : (delta / max) * 100f;
-
-        return new float[]{hue, saturation};
+        if (!quiet) onColourChanged.accept(getSelectedRgb());
     }
 
     public int[] getSelectedRgb() {
-        return hsvToRgb(hue, saturation, 100f);
+        return ColourUtil.hsvToRgb(hue, saturation, 100f);
     }
 
     @Override

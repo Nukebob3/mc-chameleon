@@ -1,68 +1,80 @@
 package net.nukebob.chameleon.util;
 
-import java.awt.*;
-
 public class ColourUtil {
-    public static int getPureHue(int colour) {
-        if (colour==0xFFFFFFFF) return 0;
+    public static int[] rgbToHsv(int r, int g, int b) {
+        double rf = r / 255.0;
+        double gf = g / 255.0;
+        double bf = b / 255.0;
 
-        int r = colour & 0xFF;
-        int g = (colour >> 8) & 0xFF;
-        int b = (colour >> 16) & 0xFF;
+        double max = Math.max(rf, Math.max(gf, bf));
+        double min = Math.min(rf, Math.min(gf, bf));
+        double delta = max - min;
 
-        float[] hsv = Color.RGBtoHSB(r, g, b, null);
+        double h = 0;
+        double s = 0;
+        double v = max;
 
-        float hue = hsv[0];
-        float maxSaturation = 1.0f;
-        float maxValue = 1.0f;
+        if (max != 0) {
+            s = delta / max;
+        } else {
+            s = 0;
+        }
 
-        int rgb = Color.HSBtoRGB(hue, maxSaturation, maxValue);
+        if (delta != 0) {
+            if (max == rf) {
+                h = (gf - bf) / delta + (gf < bf ? 6 : 0);
+            } else if (max == gf) {
+                h = (bf - rf) / delta + 2;
+            } else if (max == bf) {
+                h = (rf - gf) / delta + 4;
+            }
+            h /= 6;
+        }
 
-        int awtR = (rgb >> 16) & 0xFF;
-        int awtG = (rgb >> 8) & 0xFF;
-        int awtB = rgb & 0xFF;
-        return 0xFF000000 | (awtB << 16) | (awtG << 8) | awtR;
+        int hInt = (int) Math.round(h * 360);
+        int sInt = (int) Math.round(s * 100);
+        int vInt = (int) Math.round(v * 100);
+
+        return new int[]{hInt, sInt, vInt};
     }
-
-    public static int getMaxValue(int colour) {
-        if (colour == 0xFFFFFFFF) return 0xFFFFFFFF;
-
-        int r = (colour >> 16) & 0xFF;
-        int g = (colour >> 8) & 0xFF;
-        int b = colour & 0xFF;
-
-        float[] hsv = Color.RGBtoHSB(r, g, b, null);
-
-        float hue = hsv[0];
-        float maxSaturation = hsv[1];
-        float maxValue = 1.0f;
-
-        int rgb = Color.HSBtoRGB(hue, maxSaturation, maxValue);
-
-        int awtR = (rgb >> 16) & 0xFF;
-        int awtG = (rgb >> 8) & 0xFF;
-        int awtB = rgb & 0xFF;
-
-        return (0xFF << 24) | (awtR << 16) | (awtG << 8) | awtB;
+    public static int[] rgbToHsv(int rgb) {
+        int[] col = intToRgb(rgb);
+        return rgbToHsv(col[0], col[1], col[2]);
+    }
+    public static int[] hsvToRgb(float h, float s, float v) {
+        s /= 100f;
+        v /= 100f;
+        float c = v * s;
+        float x = c * (1 - Math.abs(((h / 60f) % 2) - 1));
+        float m = v - c;
+        float r, g, b;
+        if (h < 60) { r = c; g = x; b = 0; }
+        else if (h < 120) { r = x; g = c; b = 0; }
+        else if (h < 180) { r = 0; g = c; b = x; }
+        else if (h < 240) { r = 0; g = x; b = c; }
+        else if (h < 300) { r = x; g = 0; b = c; }
+        else { r = c; g = 0; b = x; }
+        return new int[]{
+                Math.round((r + m) * 255),
+                Math.round((g + m) * 255),
+                Math.round((b + m) * 255)
+        };
     }
 
     public static int rgbToInt(int r, int g, int b) {
-        return (0xFF << 24) | ((r & 0xFF) << 16) | ((g & 0xFF) << 8) | (b & 0xFF);
+        return (0xFF << 24) | ((b & 0xFF) << 16) | ((g & 0xFF) << 8) | (r & 0xFF);
     }
 
-    public static float[] getSaturationAndValue(int colour) {
+    public static int hsvToInt(float h, float s, float v) {
+        int[] rgb = hsvToRgb(h, s, v);
+        return rgbToInt(rgb[0], rgb[1], rgb[2]);
+    }
+
+    public static int[] intToRgb(int colour) {
         int r = colour & 0xFF;
         int g = (colour >> 8) & 0xFF;
         int b = (colour >> 16) & 0xFF;
 
-        float rf = r / 255f, gf = g / 255f, bf = b / 255f;
-        float max = Math.max(rf, Math.max(gf, bf));
-        float min = Math.min(rf, Math.min(gf, bf));
-        float delta = max - min;
-
-        float saturation = max < 1e-6f ? 0f : (delta / max) * 100f;
-        float value = max * 100f;
-
-        return new float[]{saturation, value};
+        return new int[]{r, g, b};
     }
 }

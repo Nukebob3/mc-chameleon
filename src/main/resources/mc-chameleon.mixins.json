@@ -7,7 +7,11 @@
     "CameraOrbitMixin",
     "CapeLayerMixin",
     "EntityRenderDispatcherMixin",
+    "GameRendererMixin",
+    "HudMixin",
     "HumanoidModelMixin",
+    "HumanoidRenderStateMixin",
+    "LevelExtractorMixin",
     "LivingEntityRendererMixin",
     "MouseHandlerOrbitMixin",
     "PlayerSkinMixin",
@@ -19,5 +23,8 @@
   },
   "overwrites": {
     "requireAnnotations": true
-	}
+  },
+  "mixins": [
+    "EntityMixin"
+  ]
 }

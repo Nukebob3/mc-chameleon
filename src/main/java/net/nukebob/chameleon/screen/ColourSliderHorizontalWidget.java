@@ -5,6 +5,8 @@ import net.minecraft.client.gui.components.AbstractWidget;
 import net.minecraft.client.gui.narration.NarrationElementOutput;
 import net.minecraft.client.input.MouseButtonEvent;
 import net.minecraft.network.chat.Component;
+import net.minecraft.util.ARGB;
+import net.nukebob.chameleon.util.ColourUtil;
 import org.jspecify.annotations.NonNull;
 
 import java.util.function.Consumer;
@@ -19,7 +21,7 @@ public class ColourSliderHorizontalWidget extends AbstractWidget {
 
     private final Consumer<Float> onValueChanged;
 
-    public ColourSliderHorizontalWidget(int x, int y, int width, int height, int col1, int col2, float ySelected, Consumer<Float> onValueChanged) {
+    public ColourSliderHorizontalWidget(int x, int y, int width, int height, int col1, int col2, float xSelected, Consumer<Float> onValueChanged) {
         super(x, y, width, height, Component.literal("Colour Slider"));
 
         this.col1 = col1;
@@ -27,7 +29,7 @@ public class ColourSliderHorizontalWidget extends AbstractWidget {
 
         this.onValueChanged = onValueChanged;
 
-        this.xSelected = ySelected;
+        this.xSelected = xSelected;
     }
 
     public void setCol1(int col1) {
@@ -45,23 +47,39 @@ public class ColourSliderHorizontalWidget extends AbstractWidget {
 
     @Override
     protected void extractWidgetRenderState(@NonNull GuiGraphicsExtractor graphics, int mouseX, int mouseY, float a) {
-        if (!hue)
-            graphics.fillGradient(getX(), getY(), getX()+width, getY()+height, col1, col2);
+        if (!hue) {
+            for (int x = getX(); x < getX()+getWidth(); x++) {
+                float delta = (float) (x - getX()) / width;
+
+                int color = ARGB.srgbLerp(delta, col1, col2);
+                graphics.verticalLine(x, getY(), getY()+height, color);
+            }
+        } else {
+            for (int x = getX(); x < getX()+getWidth(); x++) {
+                float delta = (float) (x - getX()) / (float)width;
+
+                float hue = (((1f-delta)*360f) + 240f) % 360f;
+                int color = ColourUtil.hsvToInt(hue, 100f, 100f);
+                graphics.verticalLine(x, getY(), getY()+height, color);
+            }
+        }
 
         int markerX = getX() + Math.round(xSelected * getWidth());
         graphics.outline(markerX - 1, getY() - 1, 3, getHeight()+2, 0xFFFFFFFF);
     }
 
+
+
     @Override
     public void onClick(MouseButtonEvent event, boolean doubleClick) {
         dragging = true;
-        pick(event.y());
+        pick(event.x());
     }
 
     @Override
     protected void onDrag(@NonNull MouseButtonEvent event, double dx, double dy) {
         if (dragging) {
-            pick(event.y());
+            pick(event.x());
         }
     }
 
@@ -70,9 +88,10 @@ public class ColourSliderHorizontalWidget extends AbstractWidget {
         dragging = false;
     }
 
-    private void pick(double mouseY) {
-        float t = (float) ((mouseY - getY()) / (double) getHeight());
+    private void pick(double mouseX) {
+        float t = (float) ((mouseX - getX()) / (double) getWidth());
         setXSelected(t);
+
         onValueChanged.accept(xSelected);
     }
 

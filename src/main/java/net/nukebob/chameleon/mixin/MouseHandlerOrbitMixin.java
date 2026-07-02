@@ -25,7 +25,7 @@ public abstract class MouseHandlerOrbitMixin {
 
     @Inject(method = "turnPlayer", at = @At("HEAD"), cancellable = true)
     private void mc_chameleon$suppressTurnWhileOrbiting(double mousea, CallbackInfo ci) {
-        if (ChameleonOrbitCamera.isActive()) {
+        if (ChameleonOrbitCamera.getInstance().isActive()) {
                 double ss = this.minecraft.options.sensitivity().get() * 0.6F + 0.2F;
                 double sensitivityMod = ss * ss * ss;
                 double sens = sensitivityMod * 8.0;
@@ -33,7 +33,7 @@ public abstract class MouseHandlerOrbitMixin {
                 double dx = this.accumulatedDX * sens * 0.8;
                 double dy = this.accumulatedDY * sens * 0.8;
 
-                ChameleonOrbitCamera.rotate((float) dx, (float) dy);
+                ChameleonOrbitCamera.getInstance().rotate((float) dx, (float) dy);
 
             ci.cancel();
         }

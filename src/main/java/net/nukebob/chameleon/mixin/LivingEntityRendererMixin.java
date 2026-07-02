@@ -10,6 +10,11 @@ import net.minecraft.client.renderer.entity.state.LivingEntityRenderState;
 import net.minecraft.client.renderer.rendertype.RenderType;
 import net.minecraft.client.renderer.state.level.CameraRenderState;
 import net.minecraft.resources.Identifier;
+import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.player.Player;
+import net.nukebob.chameleon.MCChameleonClient;
+import net.nukebob.chameleon.accessor.PoseTrackerAccessor;
+import net.nukebob.chameleon.gameplay.PoseTracker;
 import net.nukebob.chameleon.render.ChameleonRenderTypes;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
@@ -19,7 +24,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
 @Mixin(LivingEntityRenderer.class)
-public abstract class LivingEntityRendererMixin<S extends LivingEntityRenderState, M extends EntityModel<? super S>> {
+public abstract class LivingEntityRendererMixin<T extends LivingEntity, S extends LivingEntityRenderState, M extends EntityModel<? super S>> {
     @Shadow
     protected M model;
 
@@ -84,5 +89,15 @@ public abstract class LivingEntityRendererMixin<S extends LivingEntityRenderStat
         submitNodeCollector.submitModel(this.model, state, poseStack, uvTrackerType, state.lightCoords, overlayCoords, -1, null, state.outlineColor, null);
 
         poseStack.popPose();
+    }
+
+    @Inject(
+            method = "extractRenderState(Lnet/minecraft/world/entity/LivingEntity;Lnet/minecraft/client/renderer/entity/state/LivingEntityRenderState;F)V",
+            at = @At("TAIL")
+    )
+    private void mc_chameleon$capturePlayerUuid(T entity, S state, float partialTicks, CallbackInfo ci) {
+        if (entity instanceof Player player) {
+            ((PoseTrackerAccessor) state).mc_chameleon$setPoseTracker(MCChameleonClient.POSES.computeIfAbsent(player.getUUID(), uuid -> new PoseTracker()));
+        }
     }
 }

@@ -13,6 +13,6 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 public class EntityRenderDispatcherMixin {
     @Inject(method = "shouldRender", at=@At("HEAD"), cancellable = true)
     private void mc_chameleon$renderIfOrbitCamera(Entity entity, Frustum culler, double camX, double camY, double camZ, CallbackInfoReturnable<Boolean> cir) {
-        if (ChameleonOrbitCamera.isActive()) cir.setReturnValue(true);
+        if (ChameleonOrbitCamera.getInstance().isActive()) cir.setReturnValue(true);
     }
 }

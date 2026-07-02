@@ -8,6 +8,7 @@ import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
 import net.minecraft.resources.Identifier;
 import net.nukebob.chameleon.MCChameleon;
+import net.nukebob.chameleon.gameplay.Poses;
 import net.nukebob.chameleon.texture.ColourLocation;
 import org.jspecify.annotations.NonNull;
 
@@ -81,6 +82,25 @@ public class Payloads {
         }
     }
 
+    public record ClientBoundPosePayload(UUID uuid, int pose) implements CustomPacketPayload {
+        public static final Identifier POSE_PAYLOAD_ID = MCChameleon.id("pose");
+
+        public static final CustomPacketPayload.Type<ClientBoundPosePayload> TYPE = new CustomPacketPayload.Type<>(POSE_PAYLOAD_ID);
+
+        public static final StreamCodec<RegistryFriendlyByteBuf, ClientBoundPosePayload> CODEC = StreamCodec.composite(
+                UUIDUtil.STREAM_CODEC,
+                ClientBoundPosePayload::uuid,
+                ByteBufCodecs.INT,
+                ClientBoundPosePayload::pose,
+                ClientBoundPosePayload::new
+        );
+
+        @Override
+        public @NonNull Type<? extends CustomPacketPayload> type() {
+            return TYPE;
+        }
+    }
+
     public record ServerBoundUpdatePixelsPayload(int[] pixels) implements CustomPacketPayload {
         public static final Identifier UPDATE_PIXELS_PAYLOAD = MCChameleon.id("update_pixels_client");
 
@@ -123,12 +143,50 @@ public class Payloads {
         }
     }
 
+    public record ServerBoundPosePayload(Poses pose) implements CustomPacketPayload {
+        public static final Identifier POSE_PAYLOAD_ID = MCChameleon.id("pose_client");
+
+        public static final CustomPacketPayload.Type<ServerBoundPosePayload> TYPE = new CustomPacketPayload.Type<>(POSE_PAYLOAD_ID);
+
+        public static final StreamCodec<RegistryFriendlyByteBuf, ServerBoundPosePayload> CODEC = StreamCodec.composite(
+                ByteBufCodecs.INT,
+                payload -> payload.pose() == null ? -1 : payload.pose().ordinal(),
+                id -> new ServerBoundPosePayload(id == -1 ? null : Poses.values()[id])
+        );
+
+        @Override
+        public @NonNull Type<? extends CustomPacketPayload> type() {
+            return TYPE;
+        }
+    }
+
+    public record ServerBoundWhistle() implements CustomPacketPayload {
+        public static final Identifier WHISTLE_PAYLOAD_ID = MCChameleon.id("whistle");
+
+        public static final CustomPacketPayload.Type<ServerBoundWhistle> TYPE = new CustomPacketPayload.Type<>(WHISTLE_PAYLOAD_ID);
+
+        public static  final  StreamCodec<RegistryFriendlyByteBuf, ServerBoundWhistle> CODEC = StreamCodec.unit(new ServerBoundWhistle());
+
+        @Override
+        public @NonNull Type<? extends CustomPacketPayload> type() {
+            return TYPE;
+        }
+    }
+
     public static void register() {
+        //s2c
         PayloadTypeRegistry.clientboundPlay().register(ClientBoundUpdatePixelsPayload.TYPE, ClientBoundUpdatePixelsPayload.CODEC);
         PayloadTypeRegistry.clientboundPlay().register(ClientBoundUpdateSpecificPixelsPayload.TYPE, ClientBoundUpdateSpecificPixelsPayload.CODEC);
         PayloadTypeRegistry.clientboundPlay().register(ClientBoundClearPixelsPayload.TYPE, ClientBoundClearPixelsPayload.CODEC);
 
+        PayloadTypeRegistry.clientboundPlay().register(ClientBoundPosePayload.TYPE, ClientBoundPosePayload.CODEC);
+
+        //c2s
         PayloadTypeRegistry.serverboundPlay().register(ServerBoundUpdatePixelsPayload.TYPE, ServerBoundUpdatePixelsPayload.CODEC);
         PayloadTypeRegistry.serverboundPlay().register(ServerBoundUpdateSpecificPixelsPayload.TYPE, ServerBoundUpdateSpecificPixelsPayload.CODEC);
+
+        PayloadTypeRegistry.serverboundPlay().register(ServerBoundPosePayload.TYPE, ServerBoundPosePayload.CODEC);
+
+        PayloadTypeRegistry.serverboundPlay().register(ServerBoundWhistle.TYPE, ServerBoundWhistle.CODEC);
     }
 }

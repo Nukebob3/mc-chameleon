@@ -8,11 +8,10 @@ import net.minecraft.client.input.KeyEvent;
 import net.minecraft.client.input.MouseButtonEvent;
 import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.network.chat.Component;
+import net.minecraft.util.Mth;
 import net.nukebob.chameleon.MCChameleon;
 import net.nukebob.chameleon.MCChameleonClient;
 import net.nukebob.chameleon.camera.ChameleonOrbitCamera;
-import net.nukebob.chameleon.gameplay.PoseTracker;
-import net.nukebob.chameleon.gameplay.Poses;
 import net.nukebob.chameleon.networking.Payloads;
 import net.nukebob.chameleon.texture.BrushGeometry;
 import net.nukebob.chameleon.texture.ChameleonTexture;
@@ -24,7 +23,6 @@ import org.lwjgl.glfw.GLFW;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Random;
 
 public class PaintScreen extends Screen {
     private final ChameleonTexture texture;
@@ -36,7 +34,7 @@ public class PaintScreen extends Screen {
     private double mousePrevY = 0;
     private boolean spaceDown;
 
-    private int selectedColour = 0xFF000000;
+    private static int selectedColour = 0xFF000000;
     private float hue;
     private float saturation;
     private float value;
@@ -44,6 +42,12 @@ public class PaintScreen extends Screen {
     private ColourWheelWidget wheel;
     private ColourSliderWidget satSlider;
     private ColourSliderWidget valSlider;
+    private ColourSliderHorizontalWidget redSlider;
+    private ColourSliderHorizontalWidget greenSlider;
+    private ColourSliderHorizontalWidget blueSlider;
+    private ColourSliderHorizontalWidget hueSlider;
+    private ColourSliderHorizontalWidget satHSlider;
+    private ColourSliderHorizontalWidget valHSlider;
 
     private final List<ColourLocation.ColLoc> pendingPixels = new ArrayList<>();
     private long lastFlushTime = 0;
@@ -55,70 +59,134 @@ public class PaintScreen extends Screen {
         super(Component.literal("Paint Screen"));
         texture = ChameleonTexture.getChameleonTexture(Minecraft.getInstance().player.getUUID());
 
-        float[] sv = ColourUtil.getSaturationAndValue(MCChameleonClient.selectedColour);
-        this.saturation = sv[0];
-        this.value = sv[1];
+        int[] hsv = ColourUtil.rgbToHsv(MCChameleonClient.selectedColour);
+        this.hue = hsv[0];
+        this.saturation = hsv[1];
+        this.value = hsv[2];
     }
 
     @Override
     protected void init() {
-        switch (new Random().nextInt(4)) {
-            case 0 -> PoseTracker.setTargetPose(Poses.T_POSE);
-            case 1 -> PoseTracker.setTargetPose(Poses.ARCH);
-            case 2 -> PoseTracker.setTargetPose(Poses.FLAT);
-            default -> PoseTracker.setTargetPose(null);
-        }
-
         int panelSize = width/4;
 
-        this.selectedColour = MCChameleonClient.selectedColour;
-
+        selectedColour = MCChameleonClient.selectedColour;
 
         wheel = addRenderableWidget(new ColourWheelWidget(10, 10, width/4/2-10, rgb -> {
-            this.saturation = ColourUtil.getSaturationAndValue(ColourUtil.rgbToInt(rgb[0],rgb[1],rgb[2]))[0];
-            recombineColour();
+            int[] hsv =ColourUtil.rgbToHsv(rgb[0], rgb[1], rgb[2]);
+            this.hue = hsv[0];
+            this.saturation = hsv[1];
+            recombineColour(true);
         },selectedColour));
 
         float satY = 1f - (saturation / 100f);
         float valY = 1f - (value / 100f);
 
-        int[] pureHueRgb = wheel.getPureHueRgb();
-        int pureHue = 0xFF000000 | (pureHueRgb[2] << 16) | (pureHueRgb[1] << 8) | pureHueRgb[0];
+        int pureHue = ColourUtil.hsvToInt(hue, 100f, 100f);
 
         satSlider  = addRenderableWidget(new ColourSliderWidget(
-                panelSize/2+10,10,10, panelSize /2-10,
+                10 + width/4/2-10+ 10,10,10, panelSize /2-10,
                 pureHue, 0xFFFFFFFF, satY,
-                sat -> {saturation = (1f - sat) * 100f; recombineColour();}));
+                sat -> {
+                    saturation = (1f - sat) * 100f;
+                    recombineColour(true);
+                }));
 
         valSlider = addRenderableWidget(new ColourSliderWidget(
-                panelSize/2+28,10,10, panelSize /2-10,
-                ColourUtil.getMaxValue(selectedColour), 0xFF000000, valY,
-                val -> {value = (1f-val)*100f; recombineColour();}));
+                10 + width/4/2-10+ 10 +18,10,10, panelSize /2-10,
+                ColourUtil.hsvToInt(hue, saturation, 100f), 0xFF000000, valY,
+                val -> {
+                    value = (1f-val)*100f;
+                    recombineColour(true);
+                }));
 
+        redSlider = addRenderableWidget(new ColourSliderHorizontalWidget(
+                10+10, 10 + width/4/2-10+ 10, (width/4/2-10)*2/3, 10, 0xFF000000, 0xFFFF0000, 0, red -> {
+                    int[] rgb = ColourUtil.intToRgb(selectedColour);
+                    selectedColour = ColourUtil.rgbToInt(rgb[0], rgb[1], (int)(red*255));
+                    recombineColour(false);
+        }));
 
+        greenSlider = addRenderableWidget(new ColourSliderHorizontalWidget(
+                10+10, 10 + width/4/2-10+ 10+13, (width/4/2-10)*2/3, 10, 0xFF000000, 0xFF00FF00, 0, green -> {
+                    int[] rgb = ColourUtil.intToRgb(selectedColour);
+                    selectedColour = ColourUtil.rgbToInt(rgb[0], (int)(green*255), rgb[2]);
+                    recombineColour(false);
+        }));
 
-        var camera = Minecraft.getInstance().getCameraEntity();
-        if (camera != null && !ChameleonOrbitCamera.isActive()) {
-            ChameleonOrbitCamera.syncToEntityLookDirection(camera.getYRot(), camera.getXRot());
+        blueSlider = addRenderableWidget(new ColourSliderHorizontalWidget(
+                10+10, 10 + width/4/2-10+ 10+13+13, (width/4/2-10)*2/3, 10, 0xFF000000, 0xFF0000FF, 0, blue -> {
+                    int[] rgb = ColourUtil.intToRgb(selectedColour);
+                    selectedColour = ColourUtil.rgbToInt((int)(blue*255), rgb[1], rgb[2]);
+                    recombineColour(false);
+        }));
+
+        hueSlider = addRenderableWidget(new ColourSliderHorizontalWidget(
+                10 + width/4/2-10+ 10+5, 10 + width/4/2-10+ 10, (width/4/2-10)*2/3, 10, 0, 0, 0, hueUnprocessed -> {
+                    float shifted = hueUnprocessed - (2f / 3f);
+                    float delta = 1f - (shifted - (float) Mth.floor(shifted));
+                    this.hue = delta * 360f;
+                    recombineColour(true);
+        }));
+        hueSlider.hue=true;
+
+        satHSlider = addRenderableWidget(new ColourSliderHorizontalWidget(
+                10 + width/4/2-10+ 10+5, 10 + width/4/2-10+ 10+13, (width/4/2-10)*2/3, 10, pureHue, 0xFFFFFFFF, 0, sat -> {
+                    saturation = (1f - sat) * 100f;
+                    recombineColour(true);
+        }));
+
+        valHSlider = addRenderableWidget(new ColourSliderHorizontalWidget(
+                10 + width/4/2-10+ 10+5, 10 + width/4/2-10+ 10+13+13, (width/4/2-10)*2/3, 10, ColourUtil.hsvToInt(hue, saturation, 100f), 0xFF000000, 0, val -> {
+                    value = (1f-val)*100f;
+                    recombineColour(true);
+        }));
+
+        recombineColour(true);
+
+        var camera = minecraft.getCameraEntity();
+        if (camera != null && !ChameleonOrbitCamera.getInstance().isActive()) {
+            ChameleonOrbitCamera.getInstance().syncToEntityLookDirection(camera.getYRot(), camera.getXRot());
+            ChameleonOrbitCamera.getInstance().setDistance(2);
         }
-        ChameleonOrbitCamera.setActive(true);
-        ChameleonOrbitCamera.setDistance(2);
+        ChameleonOrbitCamera.getInstance().setActive(true);
     }
 
-    private void recombineColour() {
+    private void recombineColour(boolean update) {
+        int[] rgb = ColourUtil.intToRgb(selectedColour);
+        //int[] rgb = ColourUtil.hsvToRgb(hue, saturation, value);
         if (wheel == null || satSlider == null || valSlider == null) return;
 
-        int[] rgb = wheel.getHueOnlyRgb(saturation, value);
-        this.selectedColour = 0xFF000000 | (rgb[2] << 16) | (rgb[1] << 8) | rgb[0];
-        MCChameleonClient.selectedColour = this.selectedColour;
-
-        wheel.setSaturationQuiet(saturation);
+        //selected colour
+        if (update) selectedColour = ColourUtil.hsvToInt(hue, saturation, value);
+        else {
+            int[] hsv = ColourUtil.rgbToHsv(selectedColour);
+            hue = hsv[0];
+            saturation = hsv[1];
+            value = hsv[2];
+        }
+        MCChameleonClient.selectedColour = selectedColour;
+        //update sliders
+        wheel.setColour(selectedColour, true);
         satSlider.setYSelected(1f - (saturation / 100f));
+        valSlider.setYSelected(1f - (value / 100f));
 
-        int[] pureHueRgb = wheel.getPureHueRgb();
-        int pureHue = 0xFF000000 | (pureHueRgb[2] << 16) | (pureHueRgb[1] << 8) | pureHueRgb[0];
+        redSlider.setXSelected((rgb[2]/255f));
+        greenSlider.setXSelected((rgb[1]/255f));
+        blueSlider.setXSelected((rgb[0]/255f));
+
+        float shiftedHue = hue - 240f;
+        float normalizedShift = shiftedHue - (float) Mth.floor(shiftedHue / 360f) * 360f;
+        float hueRatio = normalizedShift / 360f;
+        hueSlider.setXSelected(1f - hueRatio);
+        satHSlider.setXSelected(1f - (saturation / 100f));
+        valHSlider.setXSelected(1f - (value / 100f));
+        //set slider colours
+        int pureHue = ColourUtil.hsvToInt(hue, 100f, 100f);
+
         satSlider.setCol1(pureHue);
-        valSlider.setCol1(ColourUtil.getMaxValue(selectedColour));
+        valSlider.setCol1(ColourUtil.hsvToInt(hue, saturation, 100f));
+        satHSlider.setCol1(pureHue);
+        valHSlider.setCol1(ColourUtil.hsvToInt(hue, saturation, 100f));
     }
 
     @Override
@@ -128,15 +196,15 @@ public class PaintScreen extends Screen {
 
         super.extractRenderState(graphics, mouseX, mouseY, a);
 
-        int x = mouseX * Minecraft.getInstance().getWindow().getGuiScale();
-        int y = mouseY * Minecraft.getInstance().getWindow().getGuiScale();
+        int x = mouseX * minecraft.getWindow().getGuiScale();
+        int y = mouseY * minecraft.getWindow().getGuiScale();
 
         MCChameleonClient.mouseX = x;
         MCChameleonClient.mouseY = y;
 
         if ((MCChameleonClient.uvCol!=0&&MCChameleonClient.uvCol!=-1)||mouseRightDown) {
             double basePixelSize = ((MCChameleonClient.brushSize - 1) / 7.0) * 20.0 + 4.0;
-            float cameraDist = ChameleonOrbitCamera.getDistance();
+            float cameraDist = ChameleonOrbitCamera.getInstance().getDistance();
             if (cameraDist < 0.1f) cameraDist = 0.1f;
 
             int brushSize = (int) Math.round(basePixelSize * (2.0f / cameraDist));
@@ -144,8 +212,21 @@ public class PaintScreen extends Screen {
             graphics.blitSprite(RenderPipelines.GUI_TEXTURED, MCChameleon.id("paint/circle"), mouseX-brushSize/2, mouseY-brushSize/2, brushSize,brushSize, 0xFFFFFFFF);
         }
 
+        if (spaceDown) {
+            graphics.blitSprite(RenderPipelines.GUI_TEXTURED, MCChameleon.id("paint/cross"), mouseX-12, mouseY-12, 24,24, 0xFFFFFFFF);
+        }
+
         graphics.fill(panelSize/2+46, 10, panelSize-10, panelSize /5, selectedColour);
 
+        graphics.pose().pushMatrix();
+        graphics.pose().scale(0.5f, 0.5f);
+        graphics.text(minecraft.font, "R", (redSlider.getX()-5) * 2, (redSlider.getY()+3) * 2, 0xFFFFFFFF, false);
+        graphics.text(minecraft.font, "G", (greenSlider.getX()-5) * 2, (greenSlider.getY()+3) * 2, 0xFFFFFFFF, false);
+        graphics.text(minecraft.font, "B", (blueSlider.getX()-5) * 2, (blueSlider.getY()+3) * 2, 0xFFFFFFFF, false);
+        graphics.text(minecraft.font, "H", (hueSlider.getX()-5) * 2, (hueSlider.getY()+3) * 2, 0xFFFFFFFF, false);
+        graphics.text(minecraft.font, "S", (satHSlider.getX()-5) * 2, (satHSlider.getY()+3) * 2, 0xFFFFFFFF, false);
+        graphics.text(minecraft.font, "V", (valHSlider.getX()-5) * 2, (valHSlider.getY()+3) * 2, 0xFFFFFFFF, false);
+        graphics.pose().popMatrix();
 
         age += a;
         if (age>300) {
@@ -161,6 +242,7 @@ public class PaintScreen extends Screen {
             spaceDown = true;
             pickColour();
         }
+        if (event.input()==GLFW.GLFW_KEY_F) onClose();
 
         return super.keyPressed(event);
     }
@@ -168,7 +250,6 @@ public class PaintScreen extends Screen {
     @Override
     public boolean keyReleased(KeyEvent event) {
         if (event.input()== GLFW.GLFW_KEY_SPACE) spaceDown = false;
-        if (event.input()==GLFW.GLFW_KEY_F) onClose();
 
         return super.keyReleased(event);
     }
@@ -195,7 +276,7 @@ public class PaintScreen extends Screen {
 
     @Override
     public boolean mouseScrolled(double x, double y, double scrollX, double scrollY) {
-        ChameleonOrbitCamera.setDistance((float) (ChameleonOrbitCamera.getDistance()-0.25*scrollY));
+        ChameleonOrbitCamera.getInstance().setDistance((float) (ChameleonOrbitCamera.getInstance().getDistance()-0.25*scrollY));
 
         return super.mouseScrolled(x, y, scrollX, scrollY);
     }
@@ -244,12 +325,13 @@ public class PaintScreen extends Screen {
         }
 
         if (mouseMiddleDown) {
-            ChameleonOrbitCamera.rotate((float) dx, (float) dy);
+            ChameleonOrbitCamera.getInstance().rotate((float) dx, (float) dy);
         }
     }
 
     private void paintAtCursor() {
         if (MCChameleonClient.uvCol == 0 || MCChameleonClient.uvCol == -1) return;
+        if (minecraft.player==null||!ChameleonTexture.skins.containsKey(minecraft.player.getUUID())) return;
 
         int centerU = UvPicker.decodeU(MCChameleonClient.uvCol);
         int centerV = UvPicker.decodeV(MCChameleonClient.uvCol);
@@ -285,35 +367,24 @@ public class PaintScreen extends Screen {
 
     private void pickColour() {
         UvPicker.pickPixel(
-                Minecraft.getInstance().gameRenderer.mainRenderTarget(),
-                (int) Minecraft.getInstance().mouseHandler.xpos(),
-                (int) Minecraft.getInstance().mouseHandler.ypos(),
+                minecraft.gameRenderer.mainRenderTarget(),
+                (int) minecraft.mouseHandler.xpos(),
+                (int) minecraft.mouseHandler.ypos(),
                 col -> {
                     int r = (col >> 16) & 0xFF;
                     int g = (col >> 8) & 0xFF;
                     int b = col & 0xFF;
 
-                    this.selectedColour = 0xFF000000 | (b << 16) | (g << 8) | r;
-                    MCChameleonClient.selectedColour = this.selectedColour;
+                    int[] hsv = ColourUtil.rgbToHsv(r, g, b);
 
-                    float[] sv = ColourUtil.getSaturationAndValue(this.selectedColour);
-                    this.saturation = sv[0];
-                    this.value = sv[1];
+                    selectedColour = 0xFF000000 | (b << 16) | (g << 8) | r;
+                    MCChameleonClient.selectedColour = selectedColour;
 
-                    if (wheel != null) {
-                        wheel.setColour(this.selectedColour);
-                        this.hue = wheel.getPureHueRgb()[0];
-                    }
+                    this.hue = hsv[0];
+                    this.saturation = hsv[1];
+                    this.value = hsv[2];
 
-                    if (satSlider != null && valSlider != null) {
-                        satSlider.setYSelected(1f - (saturation / 100f));
-                        valSlider.setYSelected(1f - (value / 100f));
-
-                        int[] pureHueRgb = wheel.getPureHueRgb();
-                        int pureHue = 0xFF000000 | (pureHueRgb[2] << 16) | (pureHueRgb[1] << 8) | pureHueRgb[0];
-                        satSlider.setCol1(pureHue);
-                        valSlider.setCol1(pureHue);
-                    }
+                    recombineColour(true);
                 }
         );
     }
@@ -326,6 +397,7 @@ public class PaintScreen extends Screen {
     @Override
     public void onClose() {
         super.onClose();
+        MCChameleonClient.wasOpenPaintScreenDown=true;
         ClientPlayNetworking.send(new Payloads.ServerBoundUpdatePixelsPayload(MCChameleonClient.localSkinCache));
     }
 }

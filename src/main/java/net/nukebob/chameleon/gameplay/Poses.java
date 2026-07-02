@@ -3,10 +3,9 @@ package net.nukebob.chameleon.gameplay;
 import net.minecraft.core.Vec3i;
 
 public enum Poses {
-    FLAT(new Vec3i(90,0,0), new Vec3i(0,22,0), Vec3i.ZERO, Vec3i.ZERO, Vec3i.ZERO, new Vec3i(0,0, -110), new Vec3i(0,0,110), new Vec3i(0,0,-50), new Vec3i(0,0,50)),
     T_POSE(Vec3i.ZERO,Vec3i.ZERO,Vec3i.ZERO,Vec3i.ZERO,Vec3i.ZERO,new Vec3i(0,0,-90),new Vec3i(0,0,90),Vec3i.ZERO,Vec3i.ZERO),
     ARCH(Vec3i.ZERO,Vec3i.ZERO,new Vec3i(28,0,0),new Vec3i(40,0,0),Vec3i.ZERO,new Vec3i(-140,0,0),new Vec3i(-140,0,0),Vec3i.ZERO,Vec3i.ZERO),
-    DEFAULT(Vec3i.ZERO,Vec3i.ZERO,Vec3i.ZERO,Vec3i.ZERO,Vec3i.ZERO,Vec3i.ZERO,Vec3i.ZERO,Vec3i.ZERO,Vec3i.ZERO);
+    FLAT(new Vec3i(90,0,0), new Vec3i(0,22,0), Vec3i.ZERO, Vec3i.ZERO, Vec3i.ZERO, new Vec3i(0,0, -110), new Vec3i(0,0,110), new Vec3i(0,0,-50), new Vec3i(0,0,50));
 
     private final Vec3i rootRot, rootOffset, waist, head, torso, leftArm, rightArm, leftLeg, rightLeg;
     Poses(Vec3i rootRot, Vec3i rootOffset, Vec3i waist, Vec3i head, Vec3i torso, Vec3i leftArm, Vec3i rightArm, Vec3i leftLeg, Vec3i rightLeg) {

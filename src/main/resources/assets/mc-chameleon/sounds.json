@@ -1,0 +1,14 @@
+{
+  "whistle": {
+    "subtitle": "subtitles.chameleon.whistle",
+    "sounds": [
+      "mc-chameleon:whistle"
+    ]
+  },
+  "fart": {
+    "subtitle": "subtitles.chameleon.whistle",
+    "sounds": [
+      "mc-chameleon:fart"
+    ]
+  }
+}

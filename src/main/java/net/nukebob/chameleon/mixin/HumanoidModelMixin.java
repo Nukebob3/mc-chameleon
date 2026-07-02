@@ -1,6 +1,5 @@
 package net.nukebob.chameleon.mixin;
 
-import net.minecraft.client.Minecraft;
 import net.minecraft.client.model.HumanoidModel;
 import net.minecraft.client.model.geom.ModelPart;
 import net.minecraft.client.model.geom.PartPose;
@@ -8,6 +7,7 @@ import net.minecraft.client.model.geom.builders.CubeDeformation;
 import net.minecraft.client.model.geom.builders.CubeListBuilder;
 import net.minecraft.client.model.geom.builders.PartDefinition;
 import net.minecraft.client.renderer.entity.state.HumanoidRenderState;
+import net.nukebob.chameleon.accessor.PoseTrackerAccessor;
 import net.nukebob.chameleon.gameplay.PoseTracker;
 import net.nukebob.chameleon.gameplay.Poses;
 import org.spongepowered.asm.mixin.Mixin;
@@ -62,10 +62,11 @@ public class HumanoidModelMixin {
         model.root().yRot = model.head.yRot;
         model.head.yRot=0;
 
-        PoseTracker.update(Minecraft.getInstance().getDeltaTracker().getRealtimeDeltaTicks());
-        Poses pose = PoseTracker.getPose();
-        float factor = PoseTracker.getProgress();
-        if (pose!=null) pose(pose, model, factor);
+        PoseTracker tracker = ((PoseTrackerAccessor) state).mc_chameleon$getPoseTracker();
+        if (tracker==null) return;
+        Poses pose = tracker.getPose();
+        float factor = tracker.getProgress();
+        if (pose!=null&&factor!=0) pose(pose, model, factor);
     }
 
     @Unique

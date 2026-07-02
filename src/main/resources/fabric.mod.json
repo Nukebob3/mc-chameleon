@@ -3,13 +3,13 @@
 	"id": "mc-chameleon",
 	"version": "${version}",
 	"name": "MC Chameleon",
-	"description": "This is an example description! Tell everyone what your mod is about!",
+	"description": "A recreation of the game Meccha Chameleon",
 	"authors": [
-		"Me!"
+		"Nukebob3"
 	],
 	"contact": {
-		"homepage": "https://fabricmc.net/",
-		"sources": "https://github.com/FabricMC/fabric-example-mod"
+		"homepage": "https://modrinth.com/project/mc-chameleon",
+		"sources": "https://github.com/Nukebob3/mc-chameleon"
 	},
 	"license": "CC0-1.0",
 	"icon": "assets/mc-chameleon/icon.png",
@@ -30,5 +30,8 @@
 		"minecraft": "~26.2",
 		"java": ">=25",
 		"fabric-api": "*"
+	},
+	"suggests": {
+		"modmenu": "*"
 	}
 }
