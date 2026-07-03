@@ -47,4 +47,9 @@ public abstract class EntityMixin {
                         : Pose.SWIMMING
         );
     }
+
+    @Inject(method = "isDiscrete", at = @At("HEAD"), cancellable = true)
+    private void mc_chameleon$alwaysShowNametagThroughWalls(CallbackInfoReturnable<Boolean> cir) {
+        cir.setReturnValue(false);
+    }
 }
