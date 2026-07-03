@@ -33,7 +33,7 @@ public abstract class LivingEntityMixin {
 
         AABB box = player.getBoundingBox().inflate(0.1);
         if (level.isClientSide()) {
-            if (player.onGround()) {
+            if (player.onGround()&&MCChameleonClient.climbing) {
                 MCChameleonClient.climbing = false;
                 cir.setReturnValue(false);
                 return;

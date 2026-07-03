@@ -8,6 +8,7 @@
     "CapeLayerMixin",
     "CycleButtonBuilderMixin",
     "EntityRenderDispatcherMixin",
+    "FogRendererMixin",
     "GameRendererMixin",
     "HudMixin",
     "HumanoidModelMixin",
@@ -21,6 +22,7 @@
     "OptionInstanceMixin",
     "OptionsMixin",
     "PlayerSkinMixin",
+    "ScreenEffectRendererMixin",
     "ScrollWheelHandlerMixin",
     "ShadowFeatureRendererMixin"
   ],

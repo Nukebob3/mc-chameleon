@@ -52,4 +52,9 @@ public abstract class EntityMixin {
     private void mc_chameleon$alwaysShowNametagThroughWalls(CallbackInfoReturnable<Boolean> cir) {
         cir.setReturnValue(false);
     }
+
+    @Inject(method = "displayFireAnimation", at = @At("HEAD"), cancellable = true)
+    private void mc_chameleon$noFireAnimation(CallbackInfoReturnable<Boolean> cir) {
+        cir.setReturnValue(false);
+    }
 }
