@@ -16,6 +16,7 @@
     "KeyMappingMixin",
     "LevelExtractorMixin",
     "LivingEntityRendererMixin",
+    "LocalPlayerMixin",
     "MouseHandlerOrbitMixin",
     "OptionInstanceMixin",
     "OptionsMixin",
@@ -31,6 +32,7 @@
   },
   "mixins": [
     "EntityMixin",
-    "LivingEntityMixin"
+    "LivingEntityMixin",
+    "PlayerMixin"
   ]
 }

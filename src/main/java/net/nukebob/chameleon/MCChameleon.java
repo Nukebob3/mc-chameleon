@@ -2,23 +2,31 @@ package net.nukebob.chameleon;
 
 import net.fabricmc.api.ModInitializer;
 import net.fabricmc.fabric.api.command.v2.CommandRegistrationCallback;
-import net.fabricmc.fabric.api.entity.event.v1.ServerPlayerEvents;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerLifecycleEvents;
+import net.fabricmc.fabric.api.networking.v1.ServerPlayConnectionEvents;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
 import net.minecraft.resources.Identifier;
 import net.minecraft.server.MinecraftServer;
+import net.minecraft.world.scores.PlayerTeam;
+import net.minecraft.world.scores.Team;
+import net.minecraft.world.scores.TeamColor;
 import net.nukebob.chameleon.command.CanvasCommand;
 import net.nukebob.chameleon.command.GameConfigCommand;
 import net.nukebob.chameleon.config.GameConfig;
+import net.nukebob.chameleon.gameplay.AttributeControl;
 import net.nukebob.chameleon.gameplay.PoseTracker;
+import net.nukebob.chameleon.gameplay.Poses;
+import net.nukebob.chameleon.gameplay.TeamControl;
 import net.nukebob.chameleon.networking.Networking;
 import net.nukebob.chameleon.networking.Payloads;
 import net.nukebob.chameleon.networking.Skins;
+import net.nukebob.chameleon.sound.ChameleonSounds;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Optional;
 import java.util.UUID;
 
 public class MCChameleon implements ModInitializer {
@@ -32,9 +40,29 @@ public class MCChameleon implements ModInitializer {
 
 	@Override
 	public void onInitialize() {
+		//TODO - replace all checks of ChameleonTexture.skins.containsKey... with the team of chameleon or hunters
+
 		ServerLifecycleEvents.SERVER_STARTED.register(server -> {
 			SERVER=server;
 			GameConfig.loadConfig();
+
+			PlayerTeam chameleon = server.getScoreboard().getPlayerTeam("chameleon");
+			PlayerTeam hunter = server.getScoreboard().getPlayerTeam("hunter");
+			if (chameleon==null) chameleon = server.getScoreboard().addPlayerTeam("chameleon");
+			if (hunter==null) hunter = server.getScoreboard().addPlayerTeam("hunter");
+
+			chameleon.setColor(Optional.of(TeamColor.WHITE));
+			chameleon.setAllowFriendlyFire(false);
+			chameleon.setNameTagVisibility(Team.Visibility.HIDE_FOR_OTHER_TEAMS);
+			chameleon.setCollisionRule(Team.CollisionRule.NEVER);
+
+			hunter.setColor(Optional.of(TeamColor.RED));
+			hunter.setAllowFriendlyFire(false);
+			hunter.setNameTagVisibility(Team.Visibility.ALWAYS);
+			hunter.setCollisionRule(Team.CollisionRule.NEVER);
+
+			TeamControl.setChameleonsTeam(chameleon);
+			TeamControl.setHuntersTeam(hunter);
 		});
 
 		ServerLifecycleEvents.SERVER_STOPPED.register(server -> {
@@ -49,16 +77,23 @@ public class MCChameleon implements ModInitializer {
 			commandDispatcher.register(GameConfigCommand.command);
 		}));
 
-		ServerPlayerEvents.JOIN.register(player -> {
+		ServerPlayConnectionEvents.JOIN.register((listener, sender, server) -> {
 			Skins.skinMap.forEach((uuid, skin) -> {
-				ServerPlayNetworking.send(player, new Payloads.ClientBoundUpdatePixelsPayload(uuid, skin));
+				ServerPlayNetworking.send(listener.player, new Payloads.ClientBoundUpdatePixelsPayload(uuid, skin));
 			});
-			POSES.forEach(((uuid, poseTracker) -> {
-				ServerPlayNetworking.send(player, new Payloads.ClientBoundPosePayload(uuid, poseTracker.getPose()==null?-1:poseTracker.getPose().ordinal()));
+			POSES.forEach(((uuid, tracker) -> {
+				Poses pose = tracker.getTargetPos();
+				sender.sendPacket(new Payloads.ClientBoundPosePayload(uuid, pose == null ? -1 : pose.ordinal()));
 			}));
+			AttributeControl.setCommonAttributes(listener.player);
+		});
+		ServerPlayConnectionEvents.DISCONNECT.register((listener, server) -> {
+			POSES.remove(listener.player.getUUID());
+			Skins.remove(listener.player.getUUID());
 		});
 
 		Payloads.register();
+		ChameleonSounds.initialize();
 		Networking.registerServerReceivers();
 	}
 

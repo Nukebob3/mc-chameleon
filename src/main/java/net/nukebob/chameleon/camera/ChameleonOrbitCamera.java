@@ -10,6 +10,7 @@ import net.minecraft.server.level.ServerLevel;
 import net.minecraft.util.Mth;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.Pose;
+import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.storage.ValueInput;
 import net.minecraft.world.level.storage.ValueOutput;
@@ -63,6 +64,8 @@ public final class ChameleonOrbitCamera extends AbstractClientPlayer {
 
         player.setYHeadRot(yaw);
         player.yHeadRotO = yaw;
+
+        player.getAttributes().getInstance(Attributes.CAMERA_DISTANCE).setBaseValue(distance*2);
     }
 
     public void setSpectatorTarget(Player target) {

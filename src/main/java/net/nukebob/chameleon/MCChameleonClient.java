@@ -3,6 +3,7 @@ package net.nukebob.chameleon;
 import net.fabricmc.api.ClientModInitializer;
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientLifecycleEvents;
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents;
+import net.fabricmc.fabric.api.client.networking.v1.ClientPlayConnectionEvents;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
 import net.fabricmc.fabric.api.client.rendering.v1.level.LevelRenderEvents;
 import net.minecraft.client.KeyMapping;
@@ -11,16 +12,17 @@ import net.minecraft.client.gui.components.debug.DebugScreenEntries;
 import net.minecraft.client.gui.components.debug.DebugScreenEntryStatus;
 import net.minecraft.resources.Identifier;
 import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.nukebob.chameleon.camera.ChameleonOrbitCamera;
 import net.nukebob.chameleon.gameplay.IdleTracker;
 import net.nukebob.chameleon.gameplay.PoseTracker;
 import net.nukebob.chameleon.gameplay.Poses;
+import net.nukebob.chameleon.gameplay.TeamControl;
 import net.nukebob.chameleon.keybind.Keybinds;
 import net.nukebob.chameleon.networking.Networking;
 import net.nukebob.chameleon.networking.Payloads;
 import net.nukebob.chameleon.render.ChameleonOutputTargets;
 import net.nukebob.chameleon.screen.PaintScreen;
-import net.nukebob.chameleon.sound.ChameleonSounds;
 import net.nukebob.chameleon.texture.ChameleonTexture;
 import net.nukebob.chameleon.util.UvPicker;
 
@@ -44,16 +46,25 @@ public class MCChameleonClient implements ClientModInitializer {
 
     public static final Map<UUID, PoseTracker> POSES = new HashMap<>();
 
+    public static boolean climbing = false;
+
     @Override
     public void onInitializeClient() {
         Networking.registerClientReceivers();
-        ChameleonSounds.initialize();
         Keybinds.init();
 
         ClientLifecycleEvents.CLIENT_STARTED.register(client -> {
             for (Identifier entryId : DebugScreenEntries.allEntries().keySet()) {
                 client.debugEntries.setStatus(entryId, DebugScreenEntryStatus.NEVER);
             }
+            //client.debugEntries.setStatus(DebugScreenEntries.ENTITY_HITBOXES, DebugScreenEntryStatus.ALWAYS_ON);
+        });
+
+        ClientPlayConnectionEvents.JOIN.register((listener, sender, client) -> {
+            localSkinCache = new int[1504];
+            if (client.player==null) return;
+            ChameleonTexture.skins.remove(client.player.getUUID());
+            client.getTextureManager().release(MCChameleon.idSkin(client.player.getUUID().toString()));
         });
 
         LevelRenderEvents.BEFORE_GIZMOS.register((ctx) -> {
@@ -64,19 +75,24 @@ public class MCChameleonClient implements ClientModInitializer {
             UvPicker.pickPixel(ChameleonOutputTargets.UV_PICKER_TARGET.getRenderTarget(), mouseX, mouseY, (result) -> {
                 uvCol = result;
             });
-            for (PoseTracker tracker : POSES.values()) {
-                tracker.update(Minecraft.getInstance().getDeltaTracker().getGameTimeDeltaTicks());
-            }
+            POSES.entrySet().removeIf(entry -> !ChameleonTexture.skins.containsKey(entry.getKey()));
+            POSES.values().forEach(tracker -> tracker.update(Minecraft.getInstance().getDeltaTracker().getGameTimeDeltaTicks()));
+
+            if (Minecraft.getInstance().player==null) return;
+            double cameraDist = Minecraft.getInstance().player.getAttributes().getInstance(Attributes.CAMERA_DISTANCE).getBaseValue();
+            double target = 4.0;
+            double newDist = cameraDist + (target - cameraDist) * 0.1;
+            if (cameraDist!=4.0) Minecraft.getInstance().player.getAttributes().getInstance(Attributes.CAMERA_DISTANCE).setBaseValue(newDist);
         });
 
         ClientTickEvents.END_CLIENT_TICK.register(client -> {
             if (client.player==null) return;
 
             wasOpenPaintScreenDown = handleKeyEdge(Keybinds.openPaintScreen, wasOpenPaintScreenDown, () -> {
-                if (ChameleonTexture.skins.containsKey(client.player.getUUID())) client.setScreenAndShow(new PaintScreen());
+                if (TeamControl.isChameleon(client.player.getTeam())) client.setScreenAndShow(new PaintScreen());
             });
             wasWhistleDown = handleKeyEdge(Keybinds.whistle, wasWhistleDown, () -> {
-                if (ChameleonTexture.skins.containsKey(client.player.getUUID())) ClientPlayNetworking.send(new Payloads.ServerBoundWhistle());
+                if (TeamControl.isChameleon(client.player.getTeam())) ClientPlayNetworking.send(new Payloads.ServerBoundWhistle());
             });
 
             ChameleonOrbitCamera camera = ChameleonOrbitCamera.getInstance();
@@ -95,6 +111,7 @@ public class MCChameleonClient implements ClientModInitializer {
                     client.setCameraEntity(cam);
                 } else {
                     camera.setActive(false);
+                    client.player.getAttributes().getInstance(Attributes.CAMERA_DISTANCE).setBaseValue(camera.getDistance()*2);
                     if (client.level != null) client.level.removeEntity(camera.getId(), Entity.RemovalReason.DISCARDED);
                     client.setCameraEntity(client.player);
                 }
