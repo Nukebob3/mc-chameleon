@@ -137,10 +137,13 @@ public class MCChameleonClient implements ClientModInitializer {
 
                 poseTracker.setTargetPose(nextPose);
                 ClientPlayNetworking.send(new Payloads.ServerBoundPosePayload(nextPose));
+                client.player.refreshDimensions();
+                if (nextPose==null) climbing = false;
             }
             if (client.player.isSprinting()) {
                 poseTracker.setTargetPose(null);
                 ClientPlayNetworking.send(new Payloads.ServerBoundPosePayload(null));
+                client.player.refreshDimensions();
             }
             if (!(client.gui.screen() instanceof PaintScreen)&&!camera.isInFreeCam()) {
                 if (IdleTracker.checkAutoDisable(client.player)) {

@@ -2,7 +2,6 @@ package net.nukebob.chameleon.gameplay;
 
 import net.minecraft.util.Mth;
 
-
 public class PoseTracker {
     private Poses currentPose;
     private Poses targetPose;
@@ -48,5 +47,9 @@ public class PoseTracker {
 
         if (transitionProgress>0.5) return targetPose;
         return currentPose;
+    }
+
+    public Poses getTargetPose() {
+        return targetPose;
     }
 }

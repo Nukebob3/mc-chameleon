@@ -67,6 +67,7 @@ public class Networking {
                 PlayerLookup.all(MCChameleon.SERVER).forEach(player -> {
                     if (!player.getUUID().equals(context.player().getUUID())) ServerPlayNetworking.send(player, new Payloads.ClientBoundPosePayload(context.player().getUUID(), payload.pose()==null?-1:payload.pose().ordinal()));
                 });
+                context.player().refreshDimensions();
             });
         });
         ServerPlayNetworking.registerGlobalReceiver(Payloads.ServerBoundWhistle.TYPE, (payload, context) -> {
