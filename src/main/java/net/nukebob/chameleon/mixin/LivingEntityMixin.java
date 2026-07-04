@@ -33,16 +33,19 @@ public abstract class LivingEntityMixin {
 
         AABB box = player.getBoundingBox().inflate(0.1);
         if (level.isClientSide()) {
-            if (player.onGround()&&MCChameleonClient.climbing) {
+            if (Minecraft.getInstance().options.keySprint.isDown()&&!MCChameleonClient.wasSprinting) {
                 MCChameleonClient.climbing = false;
+                MCChameleonClient.wasSprinting=true;
                 cir.setReturnValue(false);
                 return;
+            } else if (!Minecraft.getInstance().options.keySprint.isDown()) {
+                MCChameleonClient.wasSprinting=false;
             }
             if (!player.isJumping() && !MCChameleonClient.climbing) {
                 cir.setReturnValue(false);
                 return;
             }
-            if (Minecraft.getInstance().options.keySprint.isDown()) {
+            if (player.onGround()&&MCChameleonClient.climbing) {
                 MCChameleonClient.climbing = false;
                 cir.setReturnValue(false);
                 return;

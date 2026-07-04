@@ -45,6 +45,14 @@ public class Keybinds {
                     GLFW.GLFW_KEY_4,
                     CATEGORY
             ));
+    public static final KeyMapping toggleNameplate = KeyMappingHelper.registerKeyMapping(
+            new KeyMapping(
+                    "key.mc-chameleon.toggle_nameplate",
+                    InputConstants.Type.KEYSYM,
+                    GLFW.GLFW_KEY_2,
+                    CATEGORY
+            )
+    );
 
     public static void init() {}
 }

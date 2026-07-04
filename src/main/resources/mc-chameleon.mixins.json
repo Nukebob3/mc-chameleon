@@ -21,7 +21,6 @@
     "MouseHandlerOrbitMixin",
     "OptionInstanceMixin",
     "OptionsMixin",
-    "PlayerSkinMixin",
     "ScreenEffectRendererMixin",
     "ScrollWheelHandlerMixin",
     "ShadowFeatureRendererMixin"

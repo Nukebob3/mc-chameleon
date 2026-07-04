@@ -1,6 +1,7 @@
 package net.nukebob.chameleon.mixin;
 
 import net.minecraft.client.KeyMapping;
+import net.minecraft.client.Minecraft;
 import net.nukebob.chameleon.keybind.SettingsLock;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
@@ -12,12 +13,14 @@ public class KeyMappingMixin {
     @Inject(method = "isDown", at = @At("HEAD"), cancellable = true)
     private void mc_chameleon$stopKeybindDown(CallbackInfoReturnable<Boolean> cir) {
         KeyMapping key = (KeyMapping) (Object) this;
-        if (SettingsLock.disabledKeybinds.contains(key.getName().replaceFirst("key.",""))) cir.setReturnValue(false);
+        if (Minecraft.getInstance().player!=null&&!Minecraft.getInstance().player.isCreative())
+            if (SettingsLock.disabledKeybinds.contains(key.getName().replaceFirst("key.",""))) cir.setReturnValue(false);
     }
 
     @Inject(method = "consumeClick", at = @At("HEAD"), cancellable = true)
     private void mc_chameleon$stopKeybindClick(CallbackInfoReturnable<Boolean> cir) {
         KeyMapping key = (KeyMapping) (Object) this;
-        if (SettingsLock.disabledKeybinds.contains(key.getName().replaceFirst("key.",""))) cir.setReturnValue(false);
+        if (Minecraft.getInstance().player!=null&&!Minecraft.getInstance().player.isCreative())
+            if (SettingsLock.disabledKeybinds.contains(key.getName().replaceFirst("key.",""))) cir.setReturnValue(false);
     }
 }

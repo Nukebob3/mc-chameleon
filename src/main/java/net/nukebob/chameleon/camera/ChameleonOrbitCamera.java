@@ -29,7 +29,7 @@ public final class ChameleonOrbitCamera extends AbstractClientPlayer {
     public ClientInput input;
     private boolean isFreeCam;
 
-    private Player spectateWho;
+    public Player spectateWho;
 
     private static ChameleonOrbitCamera instance;
 

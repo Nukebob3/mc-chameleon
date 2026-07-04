@@ -100,4 +100,13 @@ public abstract class LivingEntityRendererMixin<T extends LivingEntity, S extend
             ((PoseTrackerAccessor) state).mc_chameleon$setPoseTracker(MCChameleonClient.POSES.computeIfAbsent(player.getUUID(), uuid -> new PoseTracker()));
         }
     }
+
+    @Inject(method = "shouldShowName(Lnet/minecraft/world/entity/LivingEntity;D)Z", at = @At("HEAD"), cancellable = true)
+    private void disableNametags(T entity, double distanceToCameraSq, CallbackInfoReturnable<Boolean> cir) {
+        if (!MCChameleonClient.namePlatesDisplay) {
+            cir.setReturnValue(false);
+            return;
+        }
+        if (entity.equals(Minecraft.getInstance().getCameraEntity())) cir.setReturnValue(true);
+    }
 }

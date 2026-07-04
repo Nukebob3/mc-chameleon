@@ -43,6 +43,11 @@ public class MCChameleonClient implements ClientModInitializer {
     private static boolean wasWhistleDown = false;
     private static boolean wasCameraLockDown = false;
     private static boolean wasFreeCamDown = false;
+    private static boolean wasToggleNamePlateDown = false;
+
+    public static boolean wasSprinting = false;
+
+    public static boolean namePlatesDisplay = true;
 
     public static final Map<UUID, PoseTracker> POSES = new HashMap<>();
 
@@ -89,7 +94,7 @@ public class MCChameleonClient implements ClientModInitializer {
             if (client.player==null) return;
 
             wasOpenPaintScreenDown = handleKeyEdge(Keybinds.openPaintScreen, wasOpenPaintScreenDown, () -> {
-                if (TeamControl.isChameleon(client.player.getTeam())) client.setScreenAndShow(new PaintScreen());
+                if (ChameleonTexture.skins.containsKey(client.player.getUUID())) client.setScreenAndShow(new PaintScreen());
             });
             wasWhistleDown = handleKeyEdge(Keybinds.whistle, wasWhistleDown, () -> {
                 if (TeamControl.isChameleon(client.player.getTeam())) ClientPlayNetworking.send(new Payloads.ServerBoundWhistle());
@@ -100,6 +105,8 @@ public class MCChameleonClient implements ClientModInitializer {
             if (camera.isActive()) camera.tick();
 
             wasCameraLockDown = handleKeyEdge(Keybinds.cameraLock, wasCameraLockDown, () -> {
+                if (!TeamControl.isChameleon(client.player.getTeam())) return;
+
                 if (client.getCameraEntity() == null) return;
                 if (!camera.isActive()) {
                     ChameleonOrbitCamera.recreate();
@@ -124,9 +131,15 @@ public class MCChameleonClient implements ClientModInitializer {
                 }
             });
 
+            wasToggleNamePlateDown = handleKeyEdge(Keybinds.toggleNameplate, wasToggleNamePlateDown, () -> {
+                namePlatesDisplay = !namePlatesDisplay;
+            });
+
             UUID uuid = client.player.getUUID();
             PoseTracker poseTracker = POSES.computeIfAbsent(uuid, k -> new PoseTracker());
             if (Keybinds.openPoseScreen.consumeClick()) {
+                if (!TeamControl.isChameleon(client.player.getTeam())) return;
+
                 Poses currentPose = poseTracker.getTargetPos();
 
                 Poses nextPose = (currentPose == null) ? Poses.T_POSE : switch (currentPose) {
