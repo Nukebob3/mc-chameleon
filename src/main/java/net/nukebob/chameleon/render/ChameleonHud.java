@@ -122,6 +122,10 @@ public class ChameleonHud {
         graphics.fill(graphics.guiWidth()-30, graphics.guiHeight()/2 +64, graphics.guiWidth()-7, graphics.guiHeight()/2 +78, MCChameleonClient.namePlatesDisplay?0xFF05c900:0xFFAF0B0A);
         renderKey(graphics, Keybinds.toggleNameplate, graphics.guiWidth()-30+(MCChameleonClient.namePlatesDisplay?9:0)+1, graphics.guiHeight()/2 +64+1, 12, Keybinds.toggleNameplate.isDown()?0xFFAAAAAA:0xFFFFFFFF, MCChameleonClient.namePlatesDisplay?0xFF05A501:0xFFAF0B0A);
         renderLabel(graphics, "Toggle Nameplate Display", graphics.guiWidth()-70, graphics.guiHeight()/2+83, 65, 6, 0.5f, false);
+
+        graphics.fill(graphics.guiWidth()-20-2, graphics.guiHeight()/2-77-2, graphics.guiWidth()-20+14, graphics.guiHeight()/2-77+14, 0x55000000);
+        renderKey(graphics, options.keyChat, graphics.guiWidth()-20, graphics.guiHeight()/2-77, 12, options.keyChat.isDown()?0xFFAAAAAA:0xFFFFFFFF,0xFF000000);
+        graphics.blitSprite(RenderPipelines.GUI_TEXTURED, MCChameleon.id("actions/chat"), graphics.guiWidth()-20-15, graphics.guiHeight()/2-77+1, 11,11);
     }
 
     private static void renderKey(GuiGraphicsExtractor graphics, KeyMapping key, int x, int y, int width, int colour, int textColour) {

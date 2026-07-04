@@ -102,7 +102,7 @@ public abstract class LivingEntityRendererMixin<T extends LivingEntity, S extend
     }
 
     @Inject(method = "shouldShowName(Lnet/minecraft/world/entity/LivingEntity;D)Z", at = @At("HEAD"), cancellable = true)
-    private void disableNametags(T entity, double distanceToCameraSq, CallbackInfoReturnable<Boolean> cir) {
+    private void mc_chameleon$disableNametags(T entity, double distanceToCameraSq, CallbackInfoReturnable<Boolean> cir) {
         if (!MCChameleonClient.namePlatesDisplay) {
             cir.setReturnValue(false);
             return;
