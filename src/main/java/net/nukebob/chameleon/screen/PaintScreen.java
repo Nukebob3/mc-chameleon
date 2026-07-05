@@ -13,6 +13,7 @@ import net.nukebob.chameleon.MCChameleon;
 import net.nukebob.chameleon.MCChameleonClient;
 import net.nukebob.chameleon.camera.ChameleonOrbitCamera;
 import net.nukebob.chameleon.networking.Payloads;
+import net.nukebob.chameleon.render.ChameleonHud;
 import net.nukebob.chameleon.texture.BrushGeometry;
 import net.nukebob.chameleon.texture.ChameleonTexture;
 import net.nukebob.chameleon.texture.ColourLocation;
@@ -33,6 +34,7 @@ public class PaintScreen extends Screen {
     private double mousePrevX = 0;
     private double mousePrevY = 0;
     private boolean spaceDown;
+    private boolean altDown;
 
     private static int selectedColour = 0xFF000000;
     private float hue;
@@ -202,7 +204,7 @@ public class PaintScreen extends Screen {
         MCChameleonClient.mouseX = x;
         MCChameleonClient.mouseY = y;
 
-        if ((MCChameleonClient.uvCol!=0&&MCChameleonClient.uvCol!=-1)||mouseRightDown) {
+        if ((MCChameleonClient.uvCol!=0&&MCChameleonClient.uvCol!=-1)||(mouseRightDown&&!altDown)) {
             double basePixelSize = ((MCChameleonClient.brushSize - 1) / 7.0) * 20.0 + 4.0;
             float cameraDist = ChameleonOrbitCamera.getInstance().getDistance();
             if (cameraDist < 0.1f) cameraDist = 0.1f;
@@ -213,7 +215,7 @@ public class PaintScreen extends Screen {
         }
 
         if (spaceDown) {
-            graphics.blitSprite(RenderPipelines.GUI_TEXTURED, MCChameleon.id("paint/cross"), mouseX-12, mouseY-12, 24,24, 0xFFFFFFFF);
+            graphics.blitSprite(RenderPipelines.GUI_TEXTURED, MCChameleon.id("paint/cross"), mouseX-12, mouseY-14, 24,24, 0xFFFFFFFF);
         }
 
         graphics.fill(panelSize/2+46, 10, panelSize-10, panelSize /5, selectedColour);
@@ -234,6 +236,8 @@ public class PaintScreen extends Screen {
             ClientPlayNetworking.send(new Payloads.ServerBoundUpdatePixelsPayload(MCChameleonClient.localSkinCache));
             pendingPixels.clear();
         }
+
+        ChameleonHud.paintScreenControls(graphics, Minecraft.getInstance().options, spaceDown, altDown, mouseLeftDown, mouseRightDown, mouseMiddleDown);
     }
 
     @Override
@@ -241,6 +245,9 @@ public class PaintScreen extends Screen {
         if (event.input()== GLFW.GLFW_KEY_SPACE) {
             spaceDown = true;
             pickColour();
+        }
+        if (event.input()== GLFW.GLFW_KEY_LEFT_ALT) {
+            altDown = true;
         }
         if (event.input()==GLFW.GLFW_KEY_F) onClose();
 
@@ -250,6 +257,7 @@ public class PaintScreen extends Screen {
     @Override
     public boolean keyReleased(KeyEvent event) {
         if (event.input()== GLFW.GLFW_KEY_SPACE) spaceDown = false;
+        if (event.input()== GLFW.GLFW_KEY_LEFT_ALT) altDown = false;
 
         return super.keyReleased(event);
     }
@@ -283,7 +291,7 @@ public class PaintScreen extends Screen {
 
     @Override
     public boolean mouseReleased(MouseButtonEvent event) {
-        if (event.input()==0) {
+        if (event.input()==0&&mouseLeftDown) {
             mouseLeftDown = false;
             flushPending();
         }
@@ -296,9 +304,6 @@ public class PaintScreen extends Screen {
     @Override
     public void afterMouseMove() {
         super.afterMouseMove();
-
-        if (mouseLeftDown) paintAtCursor();
-        if (spaceDown) pickColour();
     }
 
     @Override
@@ -310,10 +315,10 @@ public class PaintScreen extends Screen {
         mousePrevX = x;
         mousePrevY = y;
 
-        if (mouseLeftDown) paintAtCursor();
+        if (mouseLeftDown&&!altDown) paintAtCursor();
         if (spaceDown) pickColour();
 
-        if (mouseRightDown) {
+        if (mouseRightDown&&!altDown) {
 
             float direction = (float) Math.signum(dx);
 
@@ -324,8 +329,12 @@ public class PaintScreen extends Screen {
             }
         }
 
-        if (mouseMiddleDown) {
+        if (mouseMiddleDown||(altDown&&mouseLeftDown)) {
             ChameleonOrbitCamera.getInstance().rotate((float) dx, (float) dy);
+        }
+        if (mouseRightDown&&altDown) {
+            float direction = (float) Math.signum(dx);
+            ChameleonOrbitCamera.getInstance().setDistance((float) (ChameleonOrbitCamera.getInstance().getDistance()-0.25*(float) (Math.abs(dx) * direction * 0.15f)));
         }
     }
 

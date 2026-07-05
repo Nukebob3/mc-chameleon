@@ -46,6 +46,7 @@ public class MCChameleonClient implements ClientModInitializer {
     private static boolean wasToggleNamePlateDown = false;
 
     public static boolean wasSprinting = false;
+    public static boolean wasJumping = false;
 
     public static boolean namePlatesDisplay = true;
 
@@ -119,6 +120,7 @@ public class MCChameleonClient implements ClientModInitializer {
                 } else {
                     camera.setActive(false);
                     client.player.getAttributes().getInstance(Attributes.CAMERA_DISTANCE).setBaseValue(camera.getDistance()*2);
+                    camera.setId(-333);
                     if (client.level != null) client.level.removeEntity(camera.getId(), Entity.RemovalReason.DISCARDED);
                     client.setCameraEntity(client.player);
                 }

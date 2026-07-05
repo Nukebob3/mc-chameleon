@@ -43,6 +43,11 @@ public abstract class LivingEntityMixin {
             }
             if (!player.isJumping() && !MCChameleonClient.climbing) {
                 cir.setReturnValue(false);
+                MCChameleonClient.wasJumping=false;
+                return;
+            } else if (player.isJumping() && !MCChameleonClient.wasJumping) {
+                cir.setReturnValue(true);
+                MCChameleonClient.wasJumping = true;
                 return;
             }
             if (player.onGround()&&MCChameleonClient.climbing) {
