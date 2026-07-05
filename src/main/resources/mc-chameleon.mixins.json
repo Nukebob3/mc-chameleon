@@ -3,6 +3,7 @@
   "package": "net.nukebob.chameleon.mixin",
   "compatibilityLevel": "JAVA_25",
   "client": [
+    "AbstractClientPlayerMixin",
     "AvatarRendererMixin",
     "CameraOrbitMixin",
     "CapeLayerMixin",
