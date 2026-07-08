@@ -220,31 +220,12 @@ public class ChameleonTexture {
     }
 
     public static int reversePixelIndex(int x, int y) {
-        for (int part = 0; part < 6; part++) {
-            for (int face = 0; face < 6; face++) {
-                Pixel faceOffset = getFaceOffset(part, face);
-                Pixel faceDimension = getFaceDimension(part, face);
+        if (x < 0 || x >= 64 || y < 0 || y >= 64) return -1;
 
-                int localX = x - faceOffset.x;
-                int localY = y - faceOffset.y;
-
-                if (localX >= 0 && localX < faceDimension.x && localY >= 0 && localY < faceDimension.y) {
-                    int pos = localY * faceDimension.x + localX;
-                    int faceLocalBase = 0;
-                    for (int f = 0; f < face; f++) {
-                        faceLocalBase += getFaceSize(part, f);
-                    }
-                    int localIndex = faceLocalBase + pos;
-
-                    int partBase = 0;
-                    if (part >= 1) partBase += 8*8*2+4*8*2+8*4*2;
-                    if (part >= 2) partBase += 8*12*2 + 4*12*2 + 4*8*2;
-                    if (part >= 3) partBase += 4*4*2 + 4*12*4;
-                    if (part >= 4) partBase += 4*4*2 + 4*12*4;
-                    if (part == 5) partBase += 4*4*2 + 4*12*4;
-
-                    return partBase + localIndex;
-                }
+        for (int i = 0; i < 1504; i++) {
+            Pixel pixel = pixelIndex(i);
+            if (pixel.x == x && pixel.y == y) {
+                return i;
             }
         }
         return -1;

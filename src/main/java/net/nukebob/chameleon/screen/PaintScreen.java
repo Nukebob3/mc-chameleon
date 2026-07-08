@@ -12,6 +12,8 @@ import net.minecraft.util.Mth;
 import net.nukebob.chameleon.MCChameleon;
 import net.nukebob.chameleon.MCChameleonClient;
 import net.nukebob.chameleon.camera.ChameleonOrbitCamera;
+import net.nukebob.chameleon.gameplay.PoseTracker;
+import net.nukebob.chameleon.gameplay.Poses;
 import net.nukebob.chameleon.networking.Payloads;
 import net.nukebob.chameleon.render.ChameleonHud;
 import net.nukebob.chameleon.texture.BrushGeometry;
@@ -74,19 +76,19 @@ public class PaintScreen extends Screen {
         selectedColour = MCChameleonClient.selectedColour;
 
         wheel = addRenderableWidget(new ColourWheelWidget(10, 10, width/4/2-10, rgb -> {
-            int[] hsv =ColourUtil.rgbToHsv(rgb[0], rgb[1], rgb[2]);
+            int[] hsv = ColourUtil.rgbToHsv(rgb[0], rgb[1], rgb[2]);
             this.hue = hsv[0];
             this.saturation = hsv[1];
             recombineColour(true);
-        },selectedColour));
+        }, selectedColour));
 
         float satY = 1f - (saturation / 100f);
         float valY = 1f - (value / 100f);
 
         int pureHue = ColourUtil.hsvToInt(hue, 100f, 100f);
 
-        satSlider  = addRenderableWidget(new ColourSliderWidget(
-                10 + width/4/2-10+ 10,10,10, panelSize /2-10,
+        satSlider = addRenderableWidget(new ColourSliderWidget(
+                10 + width/4/2-10 + 10, 10, 10, panelSize/2-10,
                 pureHue, 0xFFFFFFFF, satY,
                 sat -> {
                     saturation = (1f - sat) * 100f;
@@ -94,53 +96,53 @@ public class PaintScreen extends Screen {
                 }));
 
         valSlider = addRenderableWidget(new ColourSliderWidget(
-                10 + width/4/2-10+ 10 +18,10,10, panelSize /2-10,
+                10 + width/4/2-10 + 10 + 18, 10, 10, panelSize/2-10,
                 ColourUtil.hsvToInt(hue, saturation, 100f), 0xFF000000, valY,
                 val -> {
-                    value = (1f-val)*100f;
+                    value = (1f - val) * 100f;
                     recombineColour(true);
                 }));
 
         redSlider = addRenderableWidget(new ColourSliderHorizontalWidget(
-                10+10, 10 + width/4/2-10+ 10, (width/4/2-10)*2/3, 10, 0xFF000000, 0xFFFF0000, 0, red -> {
-                    int[] rgb = ColourUtil.intToRgb(selectedColour);
-                    selectedColour = ColourUtil.rgbToInt(rgb[0], rgb[1], (int)(red*255));
-                    recombineColour(false);
+                10+10, 10 + width/4/2-10 + 10, (width/4/2-10)*2/3, 10, 0xFF000000, 0xFFFF0000, 0, red -> {
+            int[] rgb = ColourUtil.intToRgb(selectedColour);
+            selectedColour = ColourUtil.rgbToInt(rgb[0], rgb[1], (int)(red*255));
+            recombineColour(false);
         }));
 
         greenSlider = addRenderableWidget(new ColourSliderHorizontalWidget(
-                10+10, 10 + width/4/2-10+ 10+13, (width/4/2-10)*2/3, 10, 0xFF000000, 0xFF00FF00, 0, green -> {
-                    int[] rgb = ColourUtil.intToRgb(selectedColour);
-                    selectedColour = ColourUtil.rgbToInt(rgb[0], (int)(green*255), rgb[2]);
-                    recombineColour(false);
+                10+10, 10 + width/4/2-10 + 10+13, (width/4/2-10)*2/3, 10, 0xFF000000, 0xFF00FF00, 0, green -> {
+            int[] rgb = ColourUtil.intToRgb(selectedColour);
+            selectedColour = ColourUtil.rgbToInt(rgb[0], (int)(green*255), rgb[2]);
+            recombineColour(false);
         }));
 
         blueSlider = addRenderableWidget(new ColourSliderHorizontalWidget(
-                10+10, 10 + width/4/2-10+ 10+13+13, (width/4/2-10)*2/3, 10, 0xFF000000, 0xFF0000FF, 0, blue -> {
-                    int[] rgb = ColourUtil.intToRgb(selectedColour);
-                    selectedColour = ColourUtil.rgbToInt((int)(blue*255), rgb[1], rgb[2]);
-                    recombineColour(false);
+                10+10, 10 + width/4/2-10 + 10+13+13, (width/4/2-10)*2/3, 10, 0xFF000000, 0xFF0000FF, 0, blue -> {
+            int[] rgb = ColourUtil.intToRgb(selectedColour);
+            selectedColour = ColourUtil.rgbToInt((int)(blue*255), rgb[1], rgb[2]);
+            recombineColour(false);
         }));
 
         hueSlider = addRenderableWidget(new ColourSliderHorizontalWidget(
-                10 + width/4/2-10+ 10+5, 10 + width/4/2-10+ 10, (width/4/2-10)*2/3, 10, 0, 0, 0, hueUnprocessed -> {
-                    float shifted = hueUnprocessed - (2f / 3f);
-                    float delta = 1f - (shifted - (float) Mth.floor(shifted));
-                    this.hue = delta * 360f;
-                    recombineColour(true);
+                10 + width/4/2-10 + 10+5, 10 + width/4/2-10 + 10, (width/4/2-10)*2/3, 10, 0, 0, 0, hueUnprocessed -> {
+            float shifted = hueUnprocessed - (2f / 3f);
+            float delta = 1f - (shifted - (float) Mth.floor(shifted));
+            this.hue = delta * 360f;
+            recombineColour(true);
         }));
-        hueSlider.hue=true;
+        hueSlider.hue = true;
 
         satHSlider = addRenderableWidget(new ColourSliderHorizontalWidget(
-                10 + width/4/2-10+ 10+5, 10 + width/4/2-10+ 10+13, (width/4/2-10)*2/3, 10, pureHue, 0xFFFFFFFF, 0, sat -> {
-                    saturation = (1f - sat) * 100f;
-                    recombineColour(true);
+                10 + width/4/2-10 + 10+5, 10 + width/4/2-10 + 10+13, (width/4/2-10)*2/3, 10, pureHue, 0xFFFFFFFF, 0, sat -> {
+            saturation = (1f - sat) * 100f;
+            recombineColour(true);
         }));
 
         valHSlider = addRenderableWidget(new ColourSliderHorizontalWidget(
-                10 + width/4/2-10+ 10+5, 10 + width/4/2-10+ 10+13+13, (width/4/2-10)*2/3, 10, ColourUtil.hsvToInt(hue, saturation, 100f), 0xFF000000, 0, val -> {
-                    value = (1f-val)*100f;
-                    recombineColour(true);
+                10 + width/4/2-10 + 10+5, 10 + width/4/2-10 + 10+13+13, (width/4/2-10)*2/3, 10, ColourUtil.hsvToInt(hue, saturation, 100f), 0xFF000000, 0, val -> {
+            value = (1f - val) * 100f;
+            recombineColour(true);
         }));
 
         recombineColour(true);
@@ -155,10 +157,8 @@ public class PaintScreen extends Screen {
 
     private void recombineColour(boolean update) {
         int[] rgb = ColourUtil.intToRgb(selectedColour);
-        //int[] rgb = ColourUtil.hsvToRgb(hue, saturation, value);
         if (wheel == null || satSlider == null || valSlider == null) return;
 
-        //selected colour
         if (update) selectedColour = ColourUtil.hsvToInt(hue, saturation, value);
         else {
             int[] hsv = ColourUtil.rgbToHsv(selectedColour);
@@ -167,7 +167,7 @@ public class PaintScreen extends Screen {
             value = hsv[2];
         }
         MCChameleonClient.selectedColour = selectedColour;
-        //update sliders
+
         wheel.setColour(selectedColour, true);
         satSlider.setYSelected(1f - (saturation / 100f));
         valSlider.setYSelected(1f - (value / 100f));
@@ -182,9 +182,8 @@ public class PaintScreen extends Screen {
         hueSlider.setXSelected(1f - hueRatio);
         satHSlider.setXSelected(1f - (saturation / 100f));
         valHSlider.setXSelected(1f - (value / 100f));
-        //set slider colours
-        int pureHue = ColourUtil.hsvToInt(hue, 100f, 100f);
 
+        int pureHue = ColourUtil.hsvToInt(hue, 100f, 100f);
         satSlider.setCol1(pureHue);
         valSlider.setCol1(ColourUtil.hsvToInt(hue, saturation, 100f));
         satHSlider.setCol1(pureHue);
@@ -204,21 +203,20 @@ public class PaintScreen extends Screen {
         MCChameleonClient.mouseX = x;
         MCChameleonClient.mouseY = y;
 
-        if ((MCChameleonClient.uvCol!=0&&MCChameleonClient.uvCol!=-1)||(mouseRightDown&&!altDown)) {
+        if ((MCChameleonClient.uvCol != 0 && MCChameleonClient.uvCol != -1) || (mouseRightDown && !altDown)) {
             double basePixelSize = ((MCChameleonClient.brushSize - 1) / 7.0) * 20.0 + 4.0;
             float cameraDist = ChameleonOrbitCamera.getInstance().getDistance();
             if (cameraDist < 0.1f) cameraDist = 0.1f;
 
             int brushSize = (int) Math.round(basePixelSize * (2.0f / cameraDist));
-
-            graphics.blitSprite(RenderPipelines.GUI_TEXTURED, MCChameleon.id("paint/circle"), mouseX-brushSize/2, mouseY-brushSize/2, brushSize,brushSize, 0xFFFFFFFF);
+            graphics.blitSprite(RenderPipelines.GUI_TEXTURED, MCChameleon.id("paint/circle"), mouseX-brushSize/2, mouseY-brushSize/2, brushSize, brushSize, 0xFFFFFFFF);
         }
 
         if (spaceDown) {
-            graphics.blitSprite(RenderPipelines.GUI_TEXTURED, MCChameleon.id("paint/cross"), mouseX-12, mouseY-14, 24,24, 0xFFFFFFFF);
+            graphics.blitSprite(RenderPipelines.GUI_TEXTURED, MCChameleon.id("paint/cross"), mouseX-12, mouseY-14, 24, 24, 0xFFFFFFFF);
         }
 
-        graphics.fill(panelSize/2+46, 10, panelSize-10, panelSize /5, selectedColour);
+        graphics.fill(panelSize/2+46, 10, panelSize-10, panelSize/5, selectedColour);
 
         graphics.pose().pushMatrix();
         graphics.pose().scale(0.5f, 0.5f);
@@ -231,7 +229,7 @@ public class PaintScreen extends Screen {
         graphics.pose().popMatrix();
 
         age += a;
-        if (age>300) {
+        if (age > 300) {
             age = 0;
             ClientPlayNetworking.send(new Payloads.ServerBoundUpdatePixelsPayload(MCChameleonClient.localSkinCache));
             pendingPixels.clear();
@@ -242,22 +240,22 @@ public class PaintScreen extends Screen {
 
     @Override
     public boolean keyPressed(KeyEvent event) {
-        if (event.input()== GLFW.GLFW_KEY_SPACE) {
+        if (event.input() == GLFW.GLFW_KEY_SPACE) {
             spaceDown = true;
             pickColour();
         }
-        if (event.input()== GLFW.GLFW_KEY_LEFT_ALT) {
+        if (event.input() == GLFW.GLFW_KEY_LEFT_ALT) {
             altDown = true;
         }
-        if (event.input()==GLFW.GLFW_KEY_F) onClose();
+        if (event.input() == GLFW.GLFW_KEY_F) onClose();
 
         return super.keyPressed(event);
     }
 
     @Override
     public boolean keyReleased(KeyEvent event) {
-        if (event.input()== GLFW.GLFW_KEY_SPACE) spaceDown = false;
-        if (event.input()== GLFW.GLFW_KEY_LEFT_ALT) altDown = false;
+        if (event.input() == GLFW.GLFW_KEY_SPACE) spaceDown = false;
+        if (event.input() == GLFW.GLFW_KEY_LEFT_ALT) altDown = false;
 
         return super.keyReleased(event);
     }
@@ -269,13 +267,12 @@ public class PaintScreen extends Screen {
     public boolean mouseClicked(MouseButtonEvent event, boolean doubleClick) {
         mousePrevX = event.x();
         mousePrevY = event.y();
-        if (event.input()==0) {
+        if (event.input() == 0) {
             mouseLeftDown = true;
-
             paintAtCursor();
-        } else if (event.input()==1) {
+        } else if (event.input() == 1) {
             mouseRightDown = true;
-        } else if (event.input()==2) {
+        } else if (event.input() == 2) {
             mouseMiddleDown = true;
         }
 
@@ -284,19 +281,20 @@ public class PaintScreen extends Screen {
 
     @Override
     public boolean mouseScrolled(double x, double y, double scrollX, double scrollY) {
-        ChameleonOrbitCamera.getInstance().setDistance((float) (ChameleonOrbitCamera.getInstance().getDistance()-0.25*scrollY));
-
+        ChameleonOrbitCamera.getInstance().setDistance((float) (ChameleonOrbitCamera.getInstance().getDistance() - 0.25 * scrollY));
         return super.mouseScrolled(x, y, scrollX, scrollY);
     }
 
     @Override
     public boolean mouseReleased(MouseButtonEvent event) {
-        if (event.input()==0&&mouseLeftDown) {
+        if (event.input() == 0 && mouseLeftDown) {
             mouseLeftDown = false;
             flushPending();
+        } else if (event.input() == 1) {
+            mouseRightDown = false;
+        } else if (event.input() == 2) {
+            mouseMiddleDown = false;
         }
-        else if (event.input()==1) mouseRightDown = false;
-        else if (event.input()==2) mouseMiddleDown = false;
 
         return super.mouseReleased(event);
     }
@@ -315,43 +313,56 @@ public class PaintScreen extends Screen {
         mousePrevX = x;
         mousePrevY = y;
 
-        if (mouseLeftDown&&!altDown) paintAtCursor();
+        if (mouseLeftDown && !altDown) paintAtCursor();
         if (spaceDown) pickColour();
 
-        if (mouseRightDown&&!altDown) {
-
+        if (mouseRightDown && !altDown) {
             float direction = (float) Math.signum(dx);
-
             if (direction != 0) {
                 MCChameleonClient.brushSize += (float) (Math.abs(dx) * direction * 0.15f);
-
                 MCChameleonClient.brushSize = Math.clamp(MCChameleonClient.brushSize, 1.0f, 8.0f);
             }
         }
 
-        if (mouseMiddleDown||(altDown&&mouseLeftDown)) {
+        if (mouseMiddleDown || (altDown && mouseLeftDown)) {
             ChameleonOrbitCamera.getInstance().rotate((float) dx, (float) dy);
         }
-        if (mouseRightDown&&altDown) {
+        if (mouseRightDown && altDown) {
             float direction = (float) Math.signum(dx);
-            ChameleonOrbitCamera.getInstance().setDistance((float) (ChameleonOrbitCamera.getInstance().getDistance()-0.25*(float) (Math.abs(dx) * direction * 0.15f)));
+            ChameleonOrbitCamera.getInstance().setDistance((float) (ChameleonOrbitCamera.getInstance().getDistance() - 0.25f * (float)(Math.abs(dx) * direction * 0.15f)));
         }
     }
 
     private void paintAtCursor() {
         if (MCChameleonClient.uvCol == 0 || MCChameleonClient.uvCol == -1) return;
-        if (minecraft.player==null||!ChameleonTexture.skins.containsKey(minecraft.player.getUUID())) return;
+        if (minecraft.player == null || !ChameleonTexture.skins.containsKey(minecraft.player.getUUID())) return;
 
         int centerU = UvPicker.decodeU(MCChameleonClient.uvCol);
         int centerV = UvPicker.decodeV(MCChameleonClient.uvCol);
         int centerLocation = ChameleonTexture.reversePixelIndex(centerU, centerV);
         if (centerLocation == -1) return;
 
-        float radius = (float) (MCChameleonClient.brushSize / 2.0);
+        float radius = MCChameleonClient.brushSize / 2.0f;
+
+        PoseTracker tracker = MCChameleonClient.POSES.get(minecraft.player.getUUID());
+        Poses currentPose = tracker != null ? tracker.getPose() : null;
 
         for (int location = 0; location < BrushGeometry.getTexelCount(); location++) {
-            float dist = BrushGeometry.distance(centerLocation, location);
+            float dist = currentPose != null
+                    ? BrushGeometry.posedDistance(centerLocation, location, currentPose)
+                    : BrushGeometry.distance(centerLocation, location);
             if (dist <= radius) {
+                //TODO debug thing
+                int centerPart = ChameleonTexture.getPart(centerLocation);
+                int locationPart = ChameleonTexture.getPart(location);
+                if (centerPart != locationPart) {
+                    float[] a = BrushGeometry.getRestPosition(centerLocation);
+                    float[] b = BrushGeometry.getRestPosition(location);
+                    System.out.printf("Cross-part paint: part %d->%d dist=%.2f centerPos=(%.1f,%.1f,%.1f) targetPos=(%.1f,%.1f,%.1f)%n",
+                            centerPart, locationPart, dist, a[0],a[1],a[2], b[0],b[1],b[2]);
+                }
+                //TODO get rid of it when fixed painting
+
                 ColourLocation.ColLoc pixelUpdate = new ColourLocation.ColLoc(selectedColour, location);
                 texture.updatePixel(pixelUpdate);
                 pendingPixels.add(pixelUpdate);
@@ -406,7 +417,7 @@ public class PaintScreen extends Screen {
     @Override
     public void onClose() {
         super.onClose();
-        MCChameleonClient.wasOpenPaintScreenDown=true;
+        MCChameleonClient.wasOpenPaintScreenDown = true;
         ClientPlayNetworking.send(new Payloads.ServerBoundUpdatePixelsPayload(MCChameleonClient.localSkinCache));
     }
 }

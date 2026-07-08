@@ -1,0 +1,19 @@
+{
+  "model": {
+    "type": "minecraft:select",
+    "cases": [
+      {
+        "when": "gui",
+        "model": {
+          "type": "minecraft:model",
+          "model": "mc-chameleon:item/gun_inventory"
+        }
+      }
+    ],
+    "property": "minecraft:display_context",
+    "fallback": {
+      "type": "minecraft:model",
+      "model": "mc-chameleon:item/gun"
+    }
+  }
+}

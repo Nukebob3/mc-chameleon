@@ -13,10 +13,8 @@ import net.minecraft.world.scores.TeamColor;
 import net.nukebob.chameleon.command.CanvasCommand;
 import net.nukebob.chameleon.command.GameConfigCommand;
 import net.nukebob.chameleon.config.GameConfig;
-import net.nukebob.chameleon.gameplay.AttributeControl;
-import net.nukebob.chameleon.gameplay.PoseTracker;
-import net.nukebob.chameleon.gameplay.Poses;
-import net.nukebob.chameleon.gameplay.TeamControl;
+import net.nukebob.chameleon.gameplay.*;
+import net.nukebob.chameleon.item.ChameleonItems;
 import net.nukebob.chameleon.networking.Networking;
 import net.nukebob.chameleon.networking.Payloads;
 import net.nukebob.chameleon.networking.Skins;
@@ -63,6 +61,8 @@ public class MCChameleon implements ModInitializer {
 
 			TeamControl.setChameleonsTeam(chameleon);
 			TeamControl.setHuntersTeam(hunter);
+
+			GameRuleControl.setGameRules(server);
 		});
 
 		ServerLifecycleEvents.SERVER_STOPPED.register(server -> {
@@ -95,6 +95,7 @@ public class MCChameleon implements ModInitializer {
 		Payloads.register();
 		ChameleonSounds.initialize();
 		Networking.registerServerReceivers();
+		ChameleonItems.init();
 	}
 
 	public static Identifier id(String path) {
