@@ -41,19 +41,18 @@ public class ChameleonTexture {
 
         dynamicTexture = new DynamicTexture(() -> "mc-chameleon-skin_"+uuid.toString(), image);
         textureId = MCChameleon.idSkin(uuid.toString());
+
+        //skins.put(uuid, this);
     }
 
     public void load() {
         this.textureId = MCChameleon.idSkin(uuid.toString());
-        var textureManager = Minecraft.getInstance().getTextureManager();
 
-        if (textureManager.getTexture(textureId) instanceof DynamicTexture existingTexture) {
-            NativeImage existingImage = existingTexture.getPixels();
-
-            if (existingImage.getPointer() != 0) {
+        if (skins.containsKey(uuid)) {
+            ChameleonTexture existing = skins.get(uuid);
+            if (existing.dynamicTexture!= null && existing.image != null && existing.image.getPointer() != 0) {
                 this.image = new NativeImage(64, 64, true);
-                this.image.copyFrom(existingImage);
-
+                this.image.copyFrom(existing.dynamicTexture.getPixels());
                 this.dynamicTexture = new DynamicTexture(() -> "mc-chameleon-skin_" + uuid, this.image);
                 return;
             }
@@ -63,6 +62,8 @@ public class ChameleonTexture {
     }
 
     public void upload() {
+        skins.put(uuid, this);
+
         Minecraft.getInstance()
                 .getTextureManager()
                 .register(textureId, dynamicTexture);

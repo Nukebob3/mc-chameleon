@@ -58,6 +58,7 @@ public class PaintScreen extends Screen {
     private static final long FLUSH_INTERVAL_MS = 50;
 
     private float age = 0;
+    private float timeOpen;
 
     public PaintScreen() {
         super(Component.literal("Paint Screen"));
@@ -67,6 +68,8 @@ public class PaintScreen extends Screen {
         this.hue = hsv[0];
         this.saturation = hsv[1];
         this.value = hsv[2];
+
+        timeOpen = 0;
     }
 
     @Override
@@ -192,6 +195,15 @@ public class PaintScreen extends Screen {
 
     @Override
     public void extractRenderState(@NonNull GuiGraphicsExtractor graphics, int mouseX, int mouseY, float a) {
+        float interpolate = 0;
+        int openAnimationOffset = -150;
+        if (timeOpen<10) {
+            float f = timeOpen/10f;
+            interpolate = f*f-2*f+1;
+        }
+        graphics.pose().pushMatrix();
+        graphics.pose().translate(openAnimationOffset*interpolate,0);
+
         int panelSize = width/4;
         graphics.fill(5, 5, panelSize, panelSize, 0x66000000);
 
@@ -209,16 +221,22 @@ public class PaintScreen extends Screen {
             if (cameraDist < 0.1f) cameraDist = 0.1f;
 
             int brushSize = (int) Math.round(basePixelSize * (2.0f / cameraDist));
+            graphics.pose().translate(-openAnimationOffset*interpolate, 0);
             graphics.blitSprite(RenderPipelines.GUI_TEXTURED, MCChameleon.id("paint/circle"), mouseX-brushSize/2, mouseY-brushSize/2, brushSize, brushSize, 0xFFFFFFFF);
+            graphics.pose().translate(openAnimationOffset*interpolate, 0);
         }
 
         if (spaceDown) {
+            graphics.pose().translate(-openAnimationOffset*interpolate, 0);
             graphics.blitSprite(RenderPipelines.GUI_TEXTURED, MCChameleon.id("paint/cross"), mouseX-12, mouseY-14, 24, 24, 0xFFFFFFFF);
+            graphics.pose().translate(openAnimationOffset*interpolate, 0);
         }
 
         graphics.fill(panelSize/2+46, 10, panelSize-10, panelSize/5, selectedColour);
+        graphics.pose().popMatrix();
 
         graphics.pose().pushMatrix();
+        graphics.pose().translate(openAnimationOffset*interpolate,0);
         graphics.pose().scale(0.5f, 0.5f);
         graphics.text(minecraft.font, "R", (redSlider.getX()-5) * 2, (redSlider.getY()+3) * 2, 0xFFFFFFFF, false);
         graphics.text(minecraft.font, "G", (greenSlider.getX()-5) * 2, (greenSlider.getY()+3) * 2, 0xFFFFFFFF, false);
@@ -229,13 +247,17 @@ public class PaintScreen extends Screen {
         graphics.pose().popMatrix();
 
         age += a;
+        timeOpen += a;
         if (age > 300) {
             age = 0;
             ClientPlayNetworking.send(new Payloads.ServerBoundUpdatePixelsPayload(MCChameleonClient.localSkinCache));
             pendingPixels.clear();
         }
 
+        graphics.pose().pushMatrix();
+        graphics.pose().translate(openAnimationOffset*interpolate,0);
         ChameleonHud.paintScreenControls(graphics, Minecraft.getInstance().options, spaceDown, altDown, mouseLeftDown, mouseRightDown, mouseMiddleDown);
+        graphics.pose().popMatrix();
     }
 
     @Override
@@ -352,21 +374,16 @@ public class PaintScreen extends Screen {
                     ? BrushGeometry.posedDistance(centerLocation, location, currentPose)
                     : BrushGeometry.distance(centerLocation, location);
             if (dist <= radius) {
-                //TODO debug thing
-                int centerPart = ChameleonTexture.getPart(centerLocation);
-                int locationPart = ChameleonTexture.getPart(location);
-                if (centerPart != locationPart) {
-                    float[] a = BrushGeometry.getRestPosition(centerLocation);
-                    float[] b = BrushGeometry.getRestPosition(location);
-                    System.out.printf("Cross-part paint: part %d->%d dist=%.2f centerPos=(%.1f,%.1f,%.1f) targetPos=(%.1f,%.1f,%.1f)%n",
-                            centerPart, locationPart, dist, a[0],a[1],a[2], b[0],b[1],b[2]);
-                }
-                //TODO get rid of it when fixed painting
-
                 ColourLocation.ColLoc pixelUpdate = new ColourLocation.ColLoc(selectedColour, location);
                 texture.updatePixel(pixelUpdate);
                 pendingPixels.add(pixelUpdate);
             }
+
+            /*if (ChameleonTexture.getFace(ChameleonTexture.getPart(location), ChameleonTexture.getLocalIndex(location, ChameleonTexture.getPart(location)))==5) {
+                ColourLocation.ColLoc update = new ColourLocation.ColLoc(0xFFFF0000, location);
+                texture.updatePixel(update);
+                pendingPixels.add(update);
+            }*/
         }
 
         maybeFlushPending();

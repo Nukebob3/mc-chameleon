@@ -22,13 +22,12 @@ import net.nukebob.chameleon.keybind.Keybinds;
 import net.nukebob.chameleon.networking.Networking;
 import net.nukebob.chameleon.networking.Payloads;
 import net.nukebob.chameleon.render.ChameleonOutputTargets;
+import net.nukebob.chameleon.render.GunBeamRenderer;
 import net.nukebob.chameleon.screen.PaintScreen;
 import net.nukebob.chameleon.texture.ChameleonTexture;
 import net.nukebob.chameleon.util.UvPicker;
 
-import java.util.HashMap;
-import java.util.Map;
-import java.util.UUID;
+import java.util.*;
 
 public class MCChameleonClient implements ClientModInitializer {
     public static int[] localSkinCache = new int[1504];
@@ -53,6 +52,8 @@ public class MCChameleonClient implements ClientModInitializer {
     public static final Map<UUID, PoseTracker> POSES = new HashMap<>();
 
     public static boolean climbing = false;
+
+    public static List<GunBeamRenderer> shots = new ArrayList<>();
 
     @Override
     public void onInitializeClient() {
@@ -89,6 +90,14 @@ public class MCChameleonClient implements ClientModInitializer {
             double target = 4.0;
             double newDist = cameraDist + (target - cameraDist) * 0.1;
             if (cameraDist!=4.0) Minecraft.getInstance().player.getAttributes().getInstance(Attributes.CAMERA_DISTANCE).setBaseValue(newDist);
+
+            float partialTicks = Minecraft.getInstance().getDeltaTracker().getGameTimeDeltaPartialTick(false);
+
+            shots.forEach(shot -> {
+                shot.render(ctx.poseStack(), ctx.submitNodeCollector(), ctx.levelState().cameraRenderState, partialTicks);
+                shot.age(Minecraft.getInstance().getDeltaTracker().getGameTimeDeltaTicks());
+            });
+            shots.removeIf(shot -> shot.getAge()>10);
         });
 
         ClientTickEvents.END_CLIENT_TICK.register(client -> {

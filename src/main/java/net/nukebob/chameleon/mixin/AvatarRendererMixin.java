@@ -3,10 +3,10 @@ package net.nukebob.chameleon.mixin;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.entity.player.AvatarRenderer;
 import net.minecraft.client.renderer.entity.state.AvatarRenderState;
-import net.minecraft.client.renderer.texture.DynamicTexture;
 import net.minecraft.resources.Identifier;
 import net.minecraft.world.entity.Entity;
 import net.nukebob.chameleon.MCChameleon;
+import net.nukebob.chameleon.texture.ChameleonTexture;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
@@ -19,9 +19,8 @@ public class AvatarRendererMixin {
 		if (Minecraft.getInstance().level!=null) {
 			Entity entity = Minecraft.getInstance().level.getEntity(state.id);
 			if (entity != null) {
-				String uuid = entity.getStringUUID();
-				if (Minecraft.getInstance().getTextureManager().getTexture(MCChameleon.idSkin(uuid)) instanceof DynamicTexture) {
-					cir.setReturnValue(MCChameleon.idSkin(uuid));
+				if (ChameleonTexture.skins.containsKey(entity.getUUID())) {
+					cir.setReturnValue(MCChameleon.idSkin(entity.getStringUUID()));
 				}
 			}
 		}
