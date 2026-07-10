@@ -28,7 +28,7 @@ public class GunBeamRenderer {
         return age;
     }
 
-    public void render(final PoseStack poseStack, final SubmitNodeCollector submitNodeCollector, final CameraRenderState camera, float partialTicks) {
+    public void render(final PoseStack poseStack, final SubmitNodeCollector submitNodeCollector, final CameraRenderState camera) {
         Minecraft mc = Minecraft.getInstance();
         if (mc.level == null) return;
 
@@ -55,9 +55,14 @@ public class GunBeamRenderer {
         poseStack.mulPose(Axis.YP.rotationDegrees(yRot * (180.0F / (float)Math.PI)));
         poseStack.mulPose(Axis.XP.rotationDegrees(xRot * (180.0F / (float)Math.PI)));
 
-        float size = 0.025F;
+        float size;
+        if (age/7f<0.25f) {
+            float x = age/7f;
+            size = (-16f*x*x+8f*x)/40f;
+        } else {
+             size = 1/40f;
+        }
         submitNodeCollector.submitCustomGeometry(poseStack, ChameleonRenderTypes.gunShot(), (pose, buffer) -> {
-
             vertex(buffer, pose, -size, top,  size, 0.0F,  beamLength, age);
             vertex(buffer, pose, -size, 0.0F,  size, 0.0F,  0.0F, age);
             vertex(buffer, pose,  size, 0.0F,  size, 0.25F, 0.0F, age);
@@ -91,10 +96,10 @@ public class GunBeamRenderer {
             float age
     ) {
         builder.addVertex(pose, x, y, z)
-                .setColor(age/10f, 1f, 1f, 1f)
+                .setColor(1f,1f,1f,age/7f)
                 .setUv(u, v)
                 .setOverlay(OverlayTexture.NO_OVERLAY)
                 .setLight(15728880)
-                .setNormal(pose, 0.0f, 1.0F, 0.0F);
+                .setNormal(pose, 0.0f, 1.0f, 0.0f);
     }
 }

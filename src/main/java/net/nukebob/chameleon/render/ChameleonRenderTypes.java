@@ -12,7 +12,6 @@ public class ChameleonRenderTypes {
     private static final BiFunction<Identifier, Boolean, RenderType> PLAYER_UV_TRACKER;
     private static final RenderType GUN_SHOT;
 
-
     static {
         ENTITY_GRAY = Util.memoize((texture, affectsOutline) -> {
             RenderSetup state = RenderSetup.builder(ChameleonRenderPipelines.ENTITY_GRAY).withTexture("Sampler0", texture).useLightmap().useOverlay().affectsCrumbling().sortOnUpload().setOutline(affectsOutline ? RenderSetup.OutlineProperty.AFFECTS_OUTLINE : RenderSetup.OutlineProperty.NONE).createRenderSetup();

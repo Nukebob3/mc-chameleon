@@ -2,6 +2,7 @@
 
 in vec4 vertexColor;
 in vec2 texCoord0;
+in float age;
 
 out vec4 fragColor;
 
@@ -25,8 +26,6 @@ vec3 getBeamColour(float progress) {
 }
 
 void main() {
-    float age = vertexColor.r;
-
     float positionAlongBeam = mod(texCoord0.y, 1.0);
     vec4 colour = vec4(getBeamColour(positionAlongBeam), 1.0);
 

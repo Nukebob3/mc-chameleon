@@ -94,10 +94,10 @@ public class MCChameleonClient implements ClientModInitializer {
             float partialTicks = Minecraft.getInstance().getDeltaTracker().getGameTimeDeltaPartialTick(false);
 
             shots.forEach(shot -> {
-                shot.render(ctx.poseStack(), ctx.submitNodeCollector(), ctx.levelState().cameraRenderState, partialTicks);
+                shot.render(ctx.poseStack(), ctx.submitNodeCollector(), ctx.levelState().cameraRenderState);
                 shot.age(Minecraft.getInstance().getDeltaTracker().getGameTimeDeltaTicks());
             });
-            shots.removeIf(shot -> shot.getAge()>10);
+            shots.removeIf(shot -> shot.getAge()>7f);
         });
 
         ClientTickEvents.END_CLIENT_TICK.register(client -> {
