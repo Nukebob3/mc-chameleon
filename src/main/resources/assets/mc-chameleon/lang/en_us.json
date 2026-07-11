@@ -7,5 +7,7 @@
   "key.mc-chameleon.whistle": "Whistle",
   "key.mc-chameleon.toggle_nameplate": "Toggle Nameplate Display",
 
-  "lock.mc-chameleon.reason": "Locked by MC Chameleon"
+  "lock.mc-chameleon.reason": "Locked by MC Chameleon",
+
+  "item.mc-chameleon.gun": "Gun"
 }

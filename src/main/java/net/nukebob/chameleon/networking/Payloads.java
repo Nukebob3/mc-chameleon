@@ -7,6 +7,7 @@ import net.minecraft.network.codec.ByteBufCodecs;
 import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
 import net.minecraft.resources.Identifier;
+import net.minecraft.world.phys.Vec3;
 import net.nukebob.chameleon.MCChameleon;
 import net.nukebob.chameleon.gameplay.Poses;
 import net.nukebob.chameleon.texture.ColourLocation;
@@ -101,6 +102,27 @@ public class Payloads {
         }
     }
 
+    public record ClientBoundShotPayload(Vec3 start, Vec3 end) implements CustomPacketPayload {
+        public static final Identifier SHOT_PAYLOAD_ID = MCChameleon.id("shot");
+
+        public static final CustomPacketPayload.Type<ClientBoundShotPayload> TYPE = new CustomPacketPayload.Type<>(SHOT_PAYLOAD_ID);
+
+        public static final StreamCodec<RegistryFriendlyByteBuf, ClientBoundShotPayload> CODEC = StreamCodec.composite(
+                Vec3.STREAM_CODEC,
+                ClientBoundShotPayload::start,
+                Vec3.STREAM_CODEC,
+                ClientBoundShotPayload::end,
+                ClientBoundShotPayload::new
+        );
+
+        @Override
+        public @NonNull Type<? extends CustomPacketPayload> type() {
+            return TYPE;
+        }
+    }
+
+    //
+
     public record ServerBoundUpdatePixelsPayload(int[] pixels) implements CustomPacketPayload {
         public static final Identifier UPDATE_PIXELS_PAYLOAD = MCChameleon.id("update_pixels_client");
 
@@ -173,6 +195,25 @@ public class Payloads {
         }
     }
 
+    public record ServerBoundShotPayload(Vec3 target, UUID hit) implements CustomPacketPayload {
+        public static final Identifier SHOT_PAYLOAD_ID = MCChameleon.id("shot_client");
+
+        public static final CustomPacketPayload.Type<ServerBoundShotPayload> TYPE = new CustomPacketPayload.Type<>(SHOT_PAYLOAD_ID);
+
+        public static final StreamCodec<RegistryFriendlyByteBuf, ServerBoundShotPayload> CODEC = StreamCodec.composite(
+                Vec3.STREAM_CODEC,
+                ServerBoundShotPayload::target,
+                UUIDUtil.STREAM_CODEC,
+                ServerBoundShotPayload::hit,
+                ServerBoundShotPayload::new
+        );
+
+        @Override
+        public @NonNull Type<? extends CustomPacketPayload> type() {
+            return TYPE;
+        }
+    }
+
     public static void register() {
         //s2c
         PayloadTypeRegistry.clientboundPlay().register(ClientBoundUpdatePixelsPayload.TYPE, ClientBoundUpdatePixelsPayload.CODEC);
@@ -181,6 +222,8 @@ public class Payloads {
 
         PayloadTypeRegistry.clientboundPlay().register(ClientBoundPosePayload.TYPE, ClientBoundPosePayload.CODEC);
 
+        PayloadTypeRegistry.clientboundPlay().register(ClientBoundShotPayload.TYPE, ClientBoundShotPayload.CODEC);
+
         //c2s
         PayloadTypeRegistry.serverboundPlay().register(ServerBoundUpdatePixelsPayload.TYPE, ServerBoundUpdatePixelsPayload.CODEC);
         PayloadTypeRegistry.serverboundPlay().register(ServerBoundUpdateSpecificPixelsPayload.TYPE, ServerBoundUpdateSpecificPixelsPayload.CODEC);
@@ -188,5 +231,7 @@ public class Payloads {
         PayloadTypeRegistry.serverboundPlay().register(ServerBoundPosePayload.TYPE, ServerBoundPosePayload.CODEC);
 
         PayloadTypeRegistry.serverboundPlay().register(ServerBoundWhistle.TYPE, ServerBoundWhistle.CODEC);
+
+        PayloadTypeRegistry.serverboundPlay().register(ServerBoundShotPayload.TYPE, ServerBoundShotPayload.CODEC);
     }
 }

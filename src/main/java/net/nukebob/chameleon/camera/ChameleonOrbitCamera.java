@@ -44,6 +44,11 @@ public final class ChameleonOrbitCamera extends AbstractClientPlayer {
         spectateWho = null;
     }
 
+    @Override
+    public boolean shouldShowName() {
+        return false;
+    }
+
     public static ChameleonOrbitCamera getInstance() {
         if (Minecraft.getInstance().level==null||Minecraft.getInstance().player==null) return null;
         if (instance==null) instance=new ChameleonOrbitCamera(0);
@@ -56,20 +61,26 @@ public final class ChameleonOrbitCamera extends AbstractClientPlayer {
 
     public void deactivate(Player player) {
         active = false;
-        player.setYRot(yaw);
-        player.setXRot(pitch);
+        if (player.equals(spectateWho)||spectateWho==null) {
+            player.setYRot(yaw);
+            player.setXRot(pitch);
 
-        player.yRotO = yaw;
-        player.xRotO = pitch;
+            player.yRotO = yaw;
+            player.xRotO = pitch;
 
-        player.setYHeadRot(yaw);
-        player.yHeadRotO = yaw;
+            player.setYHeadRot(yaw);
+            player.yHeadRotO = yaw;
 
-        player.getAttributes().getInstance(Attributes.CAMERA_DISTANCE).setBaseValue(distance*2);
+            player.getAttributes().getInstance(Attributes.CAMERA_DISTANCE).setBaseValue(distance * 2);
+        }
     }
 
     public void setSpectatorTarget(Player target) {
         this.spectateWho = target;
+        if (target==null) return;
+        if (isFreeCam) {
+            setPos(target.getEyePosition());
+        }
     }
 
     @Override
@@ -127,11 +138,11 @@ public final class ChameleonOrbitCamera extends AbstractClientPlayer {
 
     public Vec3 getNonFreeCamPosition() {
         var minecraft = Minecraft.getInstance();
-        if (minecraft.player == null) {
+        if (spectateWho==null && minecraft.player == null) {
             return Vec3.ZERO;
         }
 
-        Vec3 pivot = minecraft.player.getEyePosition(1.0f);
+        Vec3 pivot = spectateWho==null?minecraft.player.getEyePosition(1.0f):spectateWho.getEyePosition(1.0f);
 
         float yawRadians = yaw * (float) (Math.PI / 180.0);
         float pitchRadians = pitch * (float) (Math.PI / 180.0);

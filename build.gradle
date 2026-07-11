@@ -30,6 +30,7 @@ dependencies {
 	implementation "net.fabricmc.fabric-api:fabric-api:${project.fabric_api_version}"
 
 	localRuntime "com.terraformersmc:modmenu:20.0.0-beta.4"
+	localRuntime "maven.modrinth:TQTTVgYE:bGrLxJ8v" //carpet
 }
 
 processResources {

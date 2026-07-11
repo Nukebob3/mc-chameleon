@@ -38,8 +38,6 @@ public class MCChameleon implements ModInitializer {
 
 	@Override
 	public void onInitialize() {
-		//TODO - replace all checks of ChameleonTexture.skins.containsKey... with the team of chameleon or hunters
-
 		ServerLifecycleEvents.SERVER_STARTED.register(server -> {
 			SERVER=server;
 			GameConfig.loadConfig();
@@ -69,9 +67,6 @@ public class MCChameleon implements ModInitializer {
 			GameConfig.saveConfig();
 		});
 
-
-		LOGGER.info("MC Chameleon loaded!");
-
 		CommandRegistrationCallback.EVENT.register(((commandDispatcher, commandBuildContext, commandSelection) -> {
 			commandDispatcher.register(CanvasCommand.command);
 			commandDispatcher.register(GameConfigCommand.command);
@@ -96,6 +91,8 @@ public class MCChameleon implements ModInitializer {
 		ChameleonSounds.initialize();
 		Networking.registerServerReceivers();
 		ChameleonItems.init();
+
+		LOGGER.info("MC Chameleon loaded!");
 	}
 
 	public static Identifier id(String path) {

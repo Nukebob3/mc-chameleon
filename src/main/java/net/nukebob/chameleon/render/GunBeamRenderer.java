@@ -56,11 +56,11 @@ public class GunBeamRenderer {
         poseStack.mulPose(Axis.XP.rotationDegrees(xRot * (180.0F / (float)Math.PI)));
 
         float size;
-        if (age/7f<0.25f) {
-            float x = age/7f;
-            size = (-16f*x*x+8f*x)/40f;
+        if (age/5f<0.25f) {
+            float x = age/5f;
+            size = (-16f*x*x+8f*x)/80f;
         } else {
-             size = 1/40f;
+             size = 1/80f;
         }
         submitNodeCollector.submitCustomGeometry(poseStack, ChameleonRenderTypes.gunShot(), (pose, buffer) -> {
             vertex(buffer, pose, -size, top,  size, 0.0F,  beamLength, age);
@@ -96,7 +96,7 @@ public class GunBeamRenderer {
             float age
     ) {
         builder.addVertex(pose, x, y, z)
-                .setColor(1f,1f,1f,age/7f)
+                .setColor(1f,1f,1f,age/5f)
                 .setUv(u, v)
                 .setOverlay(OverlayTexture.NO_OVERLAY)
                 .setLight(15728880)

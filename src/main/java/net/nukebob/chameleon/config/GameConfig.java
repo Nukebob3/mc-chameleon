@@ -17,6 +17,9 @@ public class GameConfig {
 
     public boolean isWhistleSound = true;
     public int whistleFrequency = 60;
+    public int hideTime = 60;
+    public int seekTime = 300;
+    public int answerCheckTime = 30;
 
     public static synchronized GameConfig loadConfig() {
         if (config!=null) return config;

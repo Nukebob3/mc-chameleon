@@ -77,7 +77,10 @@ public abstract class CameraOrbitMixin {
 
             float partialTicks = this.getCameraEntityPartialTicks(deltaTracker);
 
-            Player player = Minecraft.getInstance().player;
+            Player player;
+            if (ChameleonOrbitCamera.getInstance().spectateWho==null)
+                player = Minecraft.getInstance().player;
+            else player = ChameleonOrbitCamera.getInstance().spectateWho;
             if (player==null) return;
             double eyeX = Mth.lerp(partialTicks, player.xo, player.getX());
             double eyeY = Mth.lerp(partialTicks, player.yo, player.getY()) + player.getEyeHeight();

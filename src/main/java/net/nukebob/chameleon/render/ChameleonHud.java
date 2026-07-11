@@ -98,7 +98,7 @@ public class ChameleonHud {
             }
         }
         if (!options.keyShift.isUnbound()) {
-            graphics.fill(graphics.guiWidth() / 2 + 2, graphics.guiHeight() - 50, graphics.guiWidth() / 2 + 20 + 2, graphics.guiHeight() - 23, Keybinds.cameraLock.isDown() ? 0xAA000000 : 0x55000000); // width = 56
+            graphics.fill(graphics.guiWidth() / 2 + 2, graphics.guiHeight() - 50, graphics.guiWidth() / 2 + 20 + 2, graphics.guiHeight() - 23, options.keyShift.isDown() ? 0xAA000000 : 0x55000000); // width = 56
             renderKey(graphics, options.keyShift, graphics.guiWidth() / 2 + 3 + 2, graphics.guiHeight() - 50 + 3, 14, 0xFFFF79E3, 0xFF000000);
             renderLabel(graphics, "Crouch", graphics.guiWidth() / 2 + 2, graphics.guiHeight() - 30, 20, 7, 0.5f, true);
         }
