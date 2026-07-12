@@ -3,6 +3,7 @@ package net.nukebob.chameleon.render;
 import net.minecraft.client.DeltaTracker;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
+import net.minecraft.client.renderer.RenderPipelines;
 import net.nukebob.chameleon.MCChameleon;
 
 public class GameHud {
@@ -13,10 +14,12 @@ public class GameHud {
     public static int whistle;
 
     public static void render(GuiGraphicsExtractor graphics, DeltaTracker deltaTracker) {
-        graphics.text(Minecraft.getInstance().font, ""+time, graphics.guiWidth()/2, 20, 0xFFFFFFFF);
-        graphics.text(Minecraft.getInstance().font, ""+maxTime, graphics.guiWidth()/2, 40, 0xFFFFFFFF);
-        graphics.text(Minecraft.getInstance().font, ""+whistle, graphics.guiWidth()/2, 60, 0xFFFFFFFF);
+        if (maxTime==0) return;
 
-        //graphics.blit(MCChameleon.id());
+        graphics.text(Minecraft.getInstance().font, ""+time, graphics.guiWidth()/2, 40, 0xFFFFFFFF);
+        graphics.text(Minecraft.getInstance().font, ""+whistle, graphics.guiWidth()/2+10, 26, 0xFFFFFF00);
+
+        int frame = Math.round(9f*((float)(maxTime-time)/(float)maxTime));
+        graphics.blitSprite(RenderPipelines.GUI_TEXTURED, MCChameleon.id("game/clock/"+(frame)), graphics.guiWidth()/2-12, 10, 24, 24);
     }
 }

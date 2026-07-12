@@ -40,7 +40,7 @@ public class Game {
 
         timer = new Timer(15, time -> {
             Game.time=time;
-            if (state.equals(GameState.SEEK)) {
+            if (state.equals(GameState.SEEK)&&time!=config.seekTime) {
                 whistleTime--;
                 if (whistleTime <= 0) {
                     whistle(config);
