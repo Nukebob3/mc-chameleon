@@ -15,6 +15,7 @@ import net.nukebob.chameleon.MCChameleon;
 import net.nukebob.chameleon.config.GameConfig;
 import net.nukebob.chameleon.dimension.ChameleonDimensions;
 import net.nukebob.chameleon.networking.Payloads;
+import net.nukebob.chameleon.networking.Skins;
 import net.nukebob.chameleon.sound.ChameleonSounds;
 
 import java.util.ArrayList;
@@ -94,6 +95,10 @@ public class Game {
                     player.setGameMode(GameType.ADVENTURE);
                 }
                 assignTeams(config);
+                for (ServerPlayer player : PlayerLookup.all(MCChameleon.SERVER)) {
+                    if (!TeamControl.isChameleon(player.getTeam())) continue;
+                    Skins.blank(player.getUUID());
+                }
                 //hider tp
             }
             case HIDE -> {
@@ -117,6 +122,7 @@ public class Game {
                 //lobby tp
                 for (ServerPlayer player : PlayerLookup.all(MCChameleon.SERVER)) {
                     player.removeAllEffects();
+                    Skins.remove(player.getUUID());
                 }
                 end();
             }
