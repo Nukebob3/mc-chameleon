@@ -1,34 +1,84 @@
 package net.nukebob.chameleon.gameplay;
 
-import net.minecraft.world.scores.Team;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.entity.ai.attributes.Attributes;
+import net.minecraft.world.scores.PlayerTeam;
+import net.nukebob.chameleon.MCChameleon;
 
 public class TeamControl {
-    private static Team chameleons;
-    private static Team hunters;
+    private static PlayerTeam chameleons;
+    private static PlayerTeam hunters;
 
-    public static Team getChameleonsTeam() {
+    public static PlayerTeam getChameleonsTeam() {
         return chameleons;
     }
 
-    public static void setChameleonsTeam(Team chameleons) {
+    public static void setChameleonsTeam(PlayerTeam chameleons) {
         TeamControl.chameleons = chameleons;
     }
 
-    public static Team getHuntersTeam() {
+    public static PlayerTeam getHuntersTeam() {
         return hunters;
     }
 
-    public static void setHuntersTeam(Team hunters) {
+    public static void setHuntersTeam(PlayerTeam hunters) {
         TeamControl.hunters = hunters;
     }
 
-    public static boolean isChameleon(Team team) {
+    public static boolean isChameleon(PlayerTeam team) {
         if (team==null) return false;
-        return team.getName().equals("chameleon");
+        return team.getName().contains("chameleon");
     }
 
-    public static boolean isHunter(Team team) {
+    public static boolean isHunter(PlayerTeam team) {
+        if (team==null) return false;
+        return team.getName().contains("hunter");
+    }
+
+    public static boolean isHunterStrict(PlayerTeam team) {
         if (team==null) return false;
         return team.getName().equals("hunter");
+    }
+
+    public static boolean isLocked(PlayerTeam team) {
+        if (team==null) return false;
+        return team.getName().contains("Found") || team.getName().contains("NotFound") || team.getName().contains("Answer");
+    }
+
+    public static void assignChameleonAnswer(String player, boolean found) {
+        PlayerTeam team;
+        if (found) team = MCChameleon.SERVER.getScoreboard().getPlayerTeam("chameleonFound");
+        else team = MCChameleon.SERVER.getScoreboard().getPlayerTeam("chameleonNotFound");
+
+        MCChameleon.SERVER.getScoreboard().addPlayerToTeam(player, team);
+    }
+
+    public static void assignHunterAnswer(String player) {
+        PlayerTeam team = MCChameleon.SERVER.getScoreboard().getPlayerTeam("hunterAnswer");
+
+        MCChameleon.SERVER.getScoreboard().addPlayerToTeam(player, team);
+    }
+
+    public static void applyChameleonAttributes(ServerPlayer player) {
+        applyCommonAttributes(player);
+        player.getAttributes().getInstance(Attributes.SCALE).setBaseValue(0.5);
+    }
+
+    public static void applyHunterAttributes(ServerPlayer player) {
+        applyCommonAttributes(player);
+        player.getAttributes().getInstance(Attributes.SCALE).setBaseValue(1.0);
+    }
+
+    public static void applyLobbyAttributes(ServerPlayer player) {
+        applyCommonAttributes(player);
+        player.getAttributes().getInstance(Attributes.SCALE).setBaseValue(0.99);
+        player.getAttributes().getInstance(Attributes.AIR_DRAG_MODIFIER).setBaseValue(1);
+    }
+
+    private static void applyCommonAttributes(ServerPlayer player) {
+        player.getAttributes().getInstance(Attributes.AIR_DRAG_MODIFIER).setBaseValue(3.0);
+        player.getAttributes().getInstance(Attributes.NAME_TAG_DISTANCE).setBaseValue(128);
+        player.getAttributes().getInstance(Attributes.GRAVITY).setBaseValue(0.06);
+        player.getAttributes().getInstance(Attributes.JUMP_STRENGTH).setBaseValue(0.25);
     }
 }

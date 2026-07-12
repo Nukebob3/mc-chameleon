@@ -12,6 +12,8 @@ public class Timer {
         this.time = time;
         this.onChange = onChange;
         this.onComplete = onComplete;
+
+        onChange.accept(time);
     }
 
     public void setTime(int time) {

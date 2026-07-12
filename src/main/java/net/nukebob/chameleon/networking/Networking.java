@@ -22,6 +22,7 @@ import net.nukebob.chameleon.config.GameConfig;
 import net.nukebob.chameleon.gameplay.PoseTracker;
 import net.nukebob.chameleon.gameplay.Poses;
 import net.nukebob.chameleon.gameplay.TeamControl;
+import net.nukebob.chameleon.render.GameHud;
 import net.nukebob.chameleon.render.GunBeamRenderer;
 import net.nukebob.chameleon.sound.ChameleonSounds;
 import net.nukebob.chameleon.texture.ChameleonTexture;
@@ -70,6 +71,15 @@ public class Networking {
         });
         ClientPlayNetworking.registerGlobalReceiver(Payloads.ClientBoundShotPayload.TYPE, (payload, context) -> {
             context.client().execute(() -> MCChameleonClient.shots.add(new GunBeamRenderer(payload.start(), payload.end())));
+        });
+        ClientPlayNetworking.registerGlobalReceiver(Payloads.ClientBoundGameHudUpdatePayload.TYPE, (payload, context) -> {
+            context.client().execute(() -> {
+                GameHud.time=payload.time();
+                GameHud.maxTime= payload.maxTime();
+                GameHud.whistle=payload.whistle();
+                GameHud.hiders=payload.hiders();
+                GameHud.seekers=payload.seekers();
+            });
         });
     }
 

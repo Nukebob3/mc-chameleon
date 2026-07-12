@@ -3,6 +3,7 @@ package net.nukebob.chameleon;
 import net.fabricmc.api.ModInitializer;
 import net.fabricmc.fabric.api.command.v2.CommandRegistrationCallback;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerLifecycleEvents;
+import net.fabricmc.fabric.api.event.lifecycle.v1.ServerTickEvents;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayConnectionEvents;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
 import net.minecraft.resources.Identifier;
@@ -11,8 +12,11 @@ import net.minecraft.world.scores.PlayerTeam;
 import net.minecraft.world.scores.Team;
 import net.minecraft.world.scores.TeamColor;
 import net.nukebob.chameleon.command.CanvasCommand;
+import net.nukebob.chameleon.command.EndCommand;
 import net.nukebob.chameleon.command.GameConfigCommand;
+import net.nukebob.chameleon.command.StartCommand;
 import net.nukebob.chameleon.config.GameConfig;
+import net.nukebob.chameleon.dimension.ChameleonDimensions;
 import net.nukebob.chameleon.gameplay.*;
 import net.nukebob.chameleon.item.ChameleonItems;
 import net.nukebob.chameleon.networking.Networking;
@@ -43,19 +47,40 @@ public class MCChameleon implements ModInitializer {
 			GameConfig.loadConfig();
 
 			PlayerTeam chameleon = server.getScoreboard().getPlayerTeam("chameleon");
+			PlayerTeam chameleonFound = server.getScoreboard().getPlayerTeam("chameleonFound");
+			PlayerTeam chameleonNotFound = server.getScoreboard().getPlayerTeam("chameleonNotFound");
 			PlayerTeam hunter = server.getScoreboard().getPlayerTeam("hunter");
+			PlayerTeam hunterAnswer = server.getScoreboard().getPlayerTeam("hunterAnswer");
 			if (chameleon==null) chameleon = server.getScoreboard().addPlayerTeam("chameleon");
+			if (chameleonFound==null) chameleonFound = server.getScoreboard().addPlayerTeam("chameleonFound");
+			if (chameleonNotFound==null) chameleonNotFound = server.getScoreboard().addPlayerTeam("chameleonNotFound");
 			if (hunter==null) hunter = server.getScoreboard().addPlayerTeam("hunter");
+			if (hunterAnswer==null) hunterAnswer = server.getScoreboard().addPlayerTeam("hunterAnswer");
 
 			chameleon.setColor(Optional.of(TeamColor.WHITE));
 			chameleon.setAllowFriendlyFire(false);
 			chameleon.setNameTagVisibility(Team.Visibility.HIDE_FOR_OTHER_TEAMS);
 			chameleon.setCollisionRule(Team.CollisionRule.NEVER);
 
+			chameleonFound.setColor(Optional.of(TeamColor.AQUA));
+			chameleonFound.setAllowFriendlyFire(false);
+			chameleonFound.setNameTagVisibility(Team.Visibility.HIDE_FOR_OTHER_TEAMS);
+			chameleonFound.setCollisionRule(Team.CollisionRule.NEVER);
+
+			chameleonNotFound.setColor(Optional.of(TeamColor.RED));
+			chameleonNotFound.setAllowFriendlyFire(false);
+			chameleonNotFound.setNameTagVisibility(Team.Visibility.HIDE_FOR_OTHER_TEAMS);
+			chameleonNotFound.setCollisionRule(Team.CollisionRule.NEVER);
+
 			hunter.setColor(Optional.of(TeamColor.RED));
 			hunter.setAllowFriendlyFire(false);
 			hunter.setNameTagVisibility(Team.Visibility.ALWAYS);
 			hunter.setCollisionRule(Team.CollisionRule.NEVER);
+
+			hunterAnswer.setColor(Optional.of(TeamColor.RED));
+			hunterAnswer.setAllowFriendlyFire(false);
+			hunterAnswer.setNameTagVisibility(Team.Visibility.ALWAYS);
+			hunterAnswer.setCollisionRule(Team.CollisionRule.NEVER);
 
 			TeamControl.setChameleonsTeam(chameleon);
 			TeamControl.setHuntersTeam(hunter);
@@ -67,9 +92,15 @@ public class MCChameleon implements ModInitializer {
 			GameConfig.saveConfig();
 		});
 
+		ServerTickEvents.END_SERVER_TICK.register(server -> {
+			if (Game.running) Game.tick();
+		});
+
 		CommandRegistrationCallback.EVENT.register(((commandDispatcher, commandBuildContext, commandSelection) -> {
 			commandDispatcher.register(CanvasCommand.command);
 			commandDispatcher.register(GameConfigCommand.command);
+			commandDispatcher.register(StartCommand.command);
+			commandDispatcher.register(EndCommand.command);
 		}));
 
 		ServerPlayConnectionEvents.JOIN.register((listener, sender, server) -> {
@@ -91,6 +122,7 @@ public class MCChameleon implements ModInitializer {
 		ChameleonSounds.initialize();
 		Networking.registerServerReceivers();
 		ChameleonItems.init();
+		ChameleonDimensions.registerDimensions();
 
 		LOGGER.info("MC Chameleon loaded!");
 	}

@@ -29,6 +29,10 @@ public abstract class EntityMixin {
     private void mc_chameleon$redirectToCam(MoverType moverType, Vec3 delta, CallbackInfo ci) {
         Entity self = (Entity)(Object)this;
         if (!self.level().isClientSide()) return;
+        if (TeamControl.isLocked(self.getTeam())) {
+            ci.cancel();
+            return;
+        }
         if (TeamControl.isChameleon(self.getTeam())&&self.isSpectator()) {
             ci.cancel();
             return;

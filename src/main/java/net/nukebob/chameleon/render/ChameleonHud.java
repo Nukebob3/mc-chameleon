@@ -30,6 +30,8 @@ public class ChameleonHud {
         else if (TeamControl.isHunter(player.getTeam())) bottomKeyBindsHunter(graphics, deltaTracker, options);
         if (ChameleonOrbitCamera.getInstance().isActive()&&!(Minecraft.getInstance().gui.screen()instanceof PaintScreen)) freeCamPanel(graphics, deltaTracker, options);
         if (TeamControl.isChameleon(player.getTeam())) rightSideKeyBinds(graphics, deltaTracker, options);
+
+        GameHud.render(graphics, deltaTracker);
     }
 
     private static void bottomKeyBindsChameleon(GuiGraphicsExtractor graphics, DeltaTracker deltaTracker, Options options) {

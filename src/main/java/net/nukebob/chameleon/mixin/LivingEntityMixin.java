@@ -2,6 +2,9 @@ package net.nukebob.chameleon.mixin;
 
 import net.minecraft.client.Minecraft;
 import net.minecraft.core.BlockPos;
+import net.minecraft.world.effect.MobEffectInstance;
+import net.minecraft.world.effect.MobEffects;
+import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.Level;
@@ -10,6 +13,7 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
 import net.nukebob.chameleon.MCChameleonClient;
+import net.nukebob.chameleon.camera.ChameleonOrbitCamera;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.Unique;
@@ -20,12 +24,26 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
 @Mixin(LivingEntity.class)
 public abstract class LivingEntityMixin {
+    @Inject(method = "forceAddEffect", at = @At("RETURN"))
+    private void mc_chameleon$lockCameraIfAnswer(MobEffectInstance newEffect, Entity source, CallbackInfo ci) {
+        if (!newEffect.getEffect().equals(MobEffects.GLOWING)) return;
+
+        LivingEntity self = (LivingEntity)(Object)this;
+        if (!self.level().isClientSide()) return;
+        if (!(self instanceof Player player)) return;
+        if (Minecraft.getInstance().player == null) return;
+        if (!player.getUUID().equals(Minecraft.getInstance().player.getUUID())) return;
+
+        ChameleonOrbitCamera.getInstance().setActive(true);
+    }
+
     @Shadow
     protected abstract void travelInAir(Vec3 input);
 
     @Inject(method = "onClimbable", at = @At("RETURN"), cancellable = true)
     private void mc_chameleon$playerWallClimb(CallbackInfoReturnable<Boolean> cir) {
-        if (!((Object)this instanceof Player player)) return;
+        LivingEntity self = (LivingEntity)(Object)this;
+        if (!(self instanceof Player player)) return;
 
         Level level = player.level();
         if (level == null) return;

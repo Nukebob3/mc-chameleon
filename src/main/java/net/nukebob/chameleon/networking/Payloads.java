@@ -121,6 +121,31 @@ public class Payloads {
         }
     }
 
+    public record ClientBoundGameHudUpdatePayload(int time, int maxTime, int whistle, int hiders, int seekers) implements CustomPacketPayload {
+        public static final Identifier GAME_HUD_UPDATE_ID = MCChameleon.id("game_hud_update");
+
+        public static final CustomPacketPayload.Type<ClientBoundGameHudUpdatePayload> TYPE = new CustomPacketPayload.Type<>(GAME_HUD_UPDATE_ID);
+
+        public static final StreamCodec<RegistryFriendlyByteBuf, ClientBoundGameHudUpdatePayload> CODEC = StreamCodec.composite(
+                ByteBufCodecs.INT,
+                ClientBoundGameHudUpdatePayload::time,
+                ByteBufCodecs.INT,
+                ClientBoundGameHudUpdatePayload::maxTime,
+                ByteBufCodecs.INT,
+                ClientBoundGameHudUpdatePayload::whistle,
+                ByteBufCodecs.INT,
+                ClientBoundGameHudUpdatePayload::hiders,
+                ByteBufCodecs.INT,
+                ClientBoundGameHudUpdatePayload::seekers,
+                ClientBoundGameHudUpdatePayload::new
+        );
+
+        @Override
+        public @NonNull Type<? extends CustomPacketPayload> type() {
+            return TYPE;
+        }
+    }
+
     //
 
     public record ServerBoundUpdatePixelsPayload(int[] pixels) implements CustomPacketPayload {
@@ -223,6 +248,8 @@ public class Payloads {
         PayloadTypeRegistry.clientboundPlay().register(ClientBoundPosePayload.TYPE, ClientBoundPosePayload.CODEC);
 
         PayloadTypeRegistry.clientboundPlay().register(ClientBoundShotPayload.TYPE, ClientBoundShotPayload.CODEC);
+
+        PayloadTypeRegistry.clientboundPlay().register(ClientBoundGameHudUpdatePayload.TYPE, ClientBoundGameHudUpdatePayload.CODEC);
 
         //c2s
         PayloadTypeRegistry.serverboundPlay().register(ServerBoundUpdatePixelsPayload.TYPE, ServerBoundUpdatePixelsPayload.CODEC);

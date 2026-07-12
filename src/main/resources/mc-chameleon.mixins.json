@@ -38,6 +38,7 @@
   "mixins": [
     "AvatarMixin",
     "EntityMixin",
+    "FarmlandCropMixin",
     "InventoryMixin",
     "LivingEntityMixin",
     "PlayerMixin"

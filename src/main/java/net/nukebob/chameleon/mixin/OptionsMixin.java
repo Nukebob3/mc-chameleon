@@ -21,6 +21,6 @@ public class OptionsMixin {
     @Inject(method = "getCameraType", at = @At("RETURN"), cancellable = true)
     private void mc_chameleon$overridePerspective(CallbackInfoReturnable<CameraType> cir) {
         if (Minecraft.getInstance().player==null) return;
-        cir.setReturnValue(TeamControl.isChameleon(Minecraft.getInstance().player.getTeam()) ?CameraType.THIRD_PERSON_BACK:CameraType.FIRST_PERSON);
+        cir.setReturnValue(!TeamControl.isHunter(Minecraft.getInstance().player.getTeam()) ?CameraType.THIRD_PERSON_BACK:CameraType.FIRST_PERSON);
     }
 }

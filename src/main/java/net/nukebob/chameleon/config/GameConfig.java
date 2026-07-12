@@ -20,6 +20,7 @@ public class GameConfig {
     public int hideTime = 60;
     public int seekTime = 300;
     public int answerCheckTime = 30;
+    public float hunterPercent = 0.2f;
 
     public static synchronized GameConfig loadConfig() {
         if (config!=null) return config;

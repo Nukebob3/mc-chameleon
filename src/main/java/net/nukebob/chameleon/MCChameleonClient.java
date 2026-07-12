@@ -123,6 +123,7 @@ public class MCChameleonClient implements ClientModInitializer {
             wasCameraLockDown = handleKeyEdge(Keybinds.cameraLock, wasCameraLockDown, () -> {
                 if (!TeamControl.isChameleon(client.player.getTeam())&&!ChameleonOrbitCamera.getInstance().isActive()) return;
                 if (GameType.SPECTATOR.equals(client.player.gameMode())) return;
+                if (TeamControl.isLocked(client.player.getTeam())) return;
 
                 if (client.getCameraEntity() == null) return;
                 if (!camera.isActive()) {
