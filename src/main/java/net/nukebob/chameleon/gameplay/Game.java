@@ -162,6 +162,8 @@ public class Game {
                     player.connection.send(new ClientboundSetTitlesAnimationPacket(0, 60, 20));
                     player.connection.send(new ClientboundSetTitleTextPacket(Component.literal("Hide Start!")));
                     playLocalSound(player, ChameleonSounds.BELL_START);
+
+                    //minecraft map -> 8.5 102.9375 48.5
                 }
             }
             case HIDE -> {

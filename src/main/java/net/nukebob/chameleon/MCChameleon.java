@@ -6,8 +6,12 @@ import net.fabricmc.fabric.api.event.lifecycle.v1.ServerLifecycleEvents;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerTickEvents;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayConnectionEvents;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
+import net.minecraft.core.BlockPos;
 import net.minecraft.resources.Identifier;
 import net.minecraft.server.MinecraftServer;
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.world.level.levelgen.structure.templatesystem.StructurePlaceSettings;
+import net.minecraft.world.level.levelgen.structure.templatesystem.StructureTemplateManager;
 import net.minecraft.world.scores.PlayerTeam;
 import net.minecraft.world.scores.Team;
 import net.minecraft.world.scores.TeamColor;
@@ -86,6 +90,16 @@ public class MCChameleon implements ModInitializer {
 			TeamControl.setHuntersTeam(hunter);
 
 			GameRuleControl.setGameRules(server);
+
+			//make default map
+			ServerLevel mapsLevel = server.getLevel(ChameleonDimensions.MAPS);
+			if (mapsLevel!=null) {
+				StructureTemplateManager structureTemplateManager = server.getStructureManager();
+				structureTemplateManager.get(MCChameleon.id("minecraft_map/0")).get().placeInWorld(mapsLevel, new BlockPos(0,100,0), BlockPos.ZERO, new StructurePlaceSettings(), mapsLevel.getRandom(), 0);
+				structureTemplateManager.get(MCChameleon.id("minecraft_map/1")).get().placeInWorld(mapsLevel, new BlockPos(-29,100,0), BlockPos.ZERO, new StructurePlaceSettings(), mapsLevel.getRandom(), 0);
+				structureTemplateManager.get(MCChameleon.id("minecraft_map/2")).get().placeInWorld(mapsLevel, new BlockPos(0,100,48), BlockPos.ZERO, new StructurePlaceSettings(), mapsLevel.getRandom(), 0);
+				structureTemplateManager.get(MCChameleon.id("minecraft_map/3")).get().placeInWorld(mapsLevel, new BlockPos(-29,100,48), BlockPos.ZERO, new StructurePlaceSettings(), mapsLevel.getRandom(), 0);
+			}
 		});
 
 		ServerLifecycleEvents.SERVER_STOPPED.register(server -> {

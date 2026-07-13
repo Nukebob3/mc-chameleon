@@ -7,6 +7,7 @@ import net.nukebob.chameleon.MCChameleon;
 
 public class ChameleonDimensions {
     public static final ResourceKey<Level> LOBBY = register("lobby");
+    public static final ResourceKey<Level> MAPS = register("maps");
 
     private static ResourceKey<Level> register(final String id) {
         return ResourceKey.create(Registries.DIMENSION, MCChameleon.id(id));

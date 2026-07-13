@@ -23,5 +23,7 @@ public class GameRuleControl {
         server.getGameRules().set(GameRules.SPAWN_WANDERING_TRADERS, false, server);
         server.getGameRules().set(GameRules.SPAWNER_BLOCKS_WORK, false, server);
         server.getGameRules().set(GameRules.SPECTATORS_GENERATE_CHUNKS, false, server);
+        server.getGameRules().set(GameRules.ADVANCE_TIME, false, server);
+        server.getGameRules().set(GameRules.ADVANCE_WEATHER, false, server);
     }
 }

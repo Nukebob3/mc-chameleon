@@ -12,8 +12,8 @@ public class BrushGeometry {
     private static final float[][] BOXES = {
             {-4, -8, -4, 8, 8, 8},   //head
             {-4, 0, -2, 8, 12, 4},   //body
-            {-4, -2, -2, 4, 12, 4},  //right_arm
-            {0,  -2, -2, 4, 12, 4},  //left_arm
+            {-3, -2, -2, 4, 12, 4},  //right_arm
+            {-1, -2, -2, 4, 12, 4},  //left_arm
             {-2, 0, -2, 4, 12, 4},   //right_leg
             {-2, 0, -2, 4, 12, 4},   //left_leg
     };
@@ -22,8 +22,8 @@ public class BrushGeometry {
     private static final float[][] PIVOTS = {
             {0, 0, 0},      //head
             {0, 0, 0},      //body
-            {5, -2, 0},     //right_arm
-            {-5, -2, 0},    //left_arm
+            {-5, 2, 0},     //right_arm
+            {5, 2, 0},      //left_arm
             {-1.9f, 12, 0}, //right_leg
             {1.9f, 12, 0},  //left_leg
     };

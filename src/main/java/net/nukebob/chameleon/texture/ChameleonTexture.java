@@ -212,7 +212,7 @@ public class ChameleonTexture {
         };
     }
 
-    private static Pixel getFaceOffset(int part, int face) {
+    public static Pixel getFaceOffset(int part, int face) {
         Pixel partOffset = getPartOffset(part);
         return partOffset.add(switch (face) {
             case 1 -> new Pixel(getFaceDimension(part, 0).x,0);

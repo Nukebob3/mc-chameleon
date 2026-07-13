@@ -9,6 +9,7 @@ import net.minecraft.client.input.MouseButtonEvent;
 import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.network.chat.Component;
 import net.minecraft.util.Mth;
+import net.minecraft.world.phys.Vec2;
 import net.nukebob.chameleon.MCChameleon;
 import net.nukebob.chameleon.MCChameleonClient;
 import net.nukebob.chameleon.camera.ChameleonOrbitCamera;
@@ -20,6 +21,7 @@ import net.nukebob.chameleon.render.ChameleonHud;
 import net.nukebob.chameleon.texture.BrushGeometry;
 import net.nukebob.chameleon.texture.ChameleonTexture;
 import net.nukebob.chameleon.texture.ColourLocation;
+import net.nukebob.chameleon.texture.Pixel;
 import net.nukebob.chameleon.util.ColourUtil;
 import net.nukebob.chameleon.util.UvPicker;
 import org.jspecify.annotations.NonNull;
@@ -217,7 +219,7 @@ public class PaintScreen extends Screen {
         MCChameleonClient.mouseY = y;
 
         if ((MCChameleonClient.uvCol != 0 && MCChameleonClient.uvCol != -1) || (mouseRightDown && !altDown)) {
-            double basePixelSize = ((MCChameleonClient.brushSize - 1) / 7.0) * 20.0 + 4.0;
+            double basePixelSize = (44f*MCChameleonClient.brushSize-16f)/7f;
             float cameraDist = ChameleonOrbitCamera.getInstance().getDistance();
             if (cameraDist < 0.1f) cameraDist = 0.1f;
 
@@ -372,16 +374,26 @@ public class PaintScreen extends Screen {
         PoseTracker tracker = MCChameleonClient.POSES.get(minecraft.player.getUUID());
         Poses currentPose = tracker != null ? tracker.getPose() : null;
 
+        int part = ChameleonTexture.getPart(centerLocation);
+        int face = ChameleonTexture.getFace(part, ChameleonTexture.getLocalIndex(centerLocation, part));
+        Pixel faceOffset = ChameleonTexture.getFaceOffset(part, face);
+
+
+
         int radiusInt = (int) Math.ceil(radius) + 1;
-        for (int u = Math.max(0, centerU - radiusInt); u <= Math.min(63, centerU + radiusInt); u++) {
-            for (int v = Math.max(0, centerV - radiusInt); v <= Math.min(63, centerV + radiusInt); v++) {
+        for (int u = faceOffset.x; u < faceOffset.x+ChameleonTexture.getFaceDimension(part, face).x; u++) {
+            for (int v = faceOffset.y; v < faceOffset.y+ChameleonTexture.getFaceDimension(part, face).y; v++) {
                 int location = ChameleonTexture.reversePixelIndex(u, v);
                 if (location == -1) continue;
 
-                float dist = currentPose != null
+                /*float dist = currentPose != null
                         ? BrushGeometry.posedDistance(centerLocation, location, currentPose)
-                        : BrushGeometry.distance(centerLocation, location);
-                if (dist <= radius) {
+                        : BrushGeometry.distance(centerLocation, location);*/
+                float dist = BrushGeometry.distance(centerLocation, location);
+
+                //if (dist <= radius) {
+                float distance = new Vec2(u-centerU, v-centerV).length();
+                if (distance<=radius) {
                     ColourLocation.ColLoc pixelUpdate = new ColourLocation.ColLoc(selectedColour, location);
                     texture.updatePixel(pixelUpdate);
                     pendingPixels.add(pixelUpdate);

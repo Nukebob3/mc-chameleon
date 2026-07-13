@@ -1,0 +1,19 @@
+{
+  "type": "mc-chameleon:maps",
+  "generator": {
+    "type": "minecraft:flat",
+    "settings": {
+      "biome": "mc-chameleon:maps",
+      "lakes": false,
+      "features": false,
+      "layers": [
+        {
+          "block": "minecraft:air",
+          "height": 64
+        }
+      ],
+      "structure_overrides": [
+      ]
+    }
+  }
+}
