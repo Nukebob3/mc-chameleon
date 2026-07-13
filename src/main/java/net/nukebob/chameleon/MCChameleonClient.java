@@ -110,7 +110,7 @@ public class MCChameleonClient implements ClientModInitializer {
             if (client.player==null) return;
 
             wasOpenPaintScreenDown = handleKeyEdge(Keybinds.openPaintScreen, wasOpenPaintScreenDown, () -> {
-                if (ChameleonTexture.skins.containsKey(client.player.getUUID())) client.setScreenAndShow(new PaintScreen());
+                if (ChameleonTexture.skins.containsKey(client.player.getUUID())&&TeamControl.isChameleonStrict(client.player.getTeam())) client.gui.setScreen(new PaintScreen());
             });
             wasWhistleDown = handleKeyEdge(Keybinds.whistle, wasWhistleDown, () -> {
                 if (TeamControl.isChameleon(client.player.getTeam())) ClientPlayNetworking.send(new Payloads.ServerBoundWhistle());

@@ -14,6 +14,7 @@ import net.nukebob.chameleon.MCChameleonClient;
 import net.nukebob.chameleon.camera.ChameleonOrbitCamera;
 import net.nukebob.chameleon.gameplay.PoseTracker;
 import net.nukebob.chameleon.gameplay.Poses;
+import net.nukebob.chameleon.gameplay.TeamControl;
 import net.nukebob.chameleon.networking.Payloads;
 import net.nukebob.chameleon.render.ChameleonHud;
 import net.nukebob.chameleon.texture.BrushGeometry;
@@ -258,6 +259,8 @@ public class PaintScreen extends Screen {
         graphics.pose().translate(openAnimationOffset*interpolate,0);
         ChameleonHud.paintScreenControls(graphics, Minecraft.getInstance().options, spaceDown, altDown, mouseLeftDown, mouseRightDown, mouseMiddleDown);
         graphics.pose().popMatrix();
+
+        if (!TeamControl.isChameleonStrict(Minecraft.getInstance().player.getTeam())) Minecraft.getInstance().gui.setScreen(null);
     }
 
     @Override
@@ -369,21 +372,21 @@ public class PaintScreen extends Screen {
         PoseTracker tracker = MCChameleonClient.POSES.get(minecraft.player.getUUID());
         Poses currentPose = tracker != null ? tracker.getPose() : null;
 
-        for (int location = 0; location < BrushGeometry.getTexelCount(); location++) {
-            float dist = currentPose != null
-                    ? BrushGeometry.posedDistance(centerLocation, location, currentPose)
-                    : BrushGeometry.distance(centerLocation, location);
-            if (dist <= radius) {
-                ColourLocation.ColLoc pixelUpdate = new ColourLocation.ColLoc(selectedColour, location);
-                texture.updatePixel(pixelUpdate);
-                pendingPixels.add(pixelUpdate);
-            }
+        int radiusInt = (int) Math.ceil(radius) + 1;
+        for (int u = Math.max(0, centerU - radiusInt); u <= Math.min(63, centerU + radiusInt); u++) {
+            for (int v = Math.max(0, centerV - radiusInt); v <= Math.min(63, centerV + radiusInt); v++) {
+                int location = ChameleonTexture.reversePixelIndex(u, v);
+                if (location == -1) continue;
 
-            /*if (ChameleonTexture.getFace(ChameleonTexture.getPart(location), ChameleonTexture.getLocalIndex(location, ChameleonTexture.getPart(location)))==5) {
-                ColourLocation.ColLoc update = new ColourLocation.ColLoc(0xFFFF0000, location);
-                texture.updatePixel(update);
-                pendingPixels.add(update);
-            }*/
+                float dist = currentPose != null
+                        ? BrushGeometry.posedDistance(centerLocation, location, currentPose)
+                        : BrushGeometry.distance(centerLocation, location);
+                if (dist <= radius) {
+                    ColourLocation.ColLoc pixelUpdate = new ColourLocation.ColLoc(selectedColour, location);
+                    texture.updatePixel(pixelUpdate);
+                    pendingPixels.add(pixelUpdate);
+                }
+            }
         }
 
         maybeFlushPending();

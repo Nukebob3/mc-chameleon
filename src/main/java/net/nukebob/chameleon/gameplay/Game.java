@@ -221,7 +221,7 @@ public class Game {
         for (ServerPlayer player : PlayerLookup.all(MCChameleon.SERVER)) {
             player.connection.send(new ClientboundSetTitlesAnimationPacket(0, 60, 20));
             if (hidersWin) player.connection.send(new ClientboundSetTitleTextPacket(Component.literal("Chameleons Win!")));
-            else player.connection.send(new ClientboundSetTitleTextPacket(Component.literal("Hunters Start!")));
+            else player.connection.send(new ClientboundSetTitleTextPacket(Component.literal("Hunters Win!")));
             playLocalSound(player, ChameleonSounds.BELL_END);
         }
     }
