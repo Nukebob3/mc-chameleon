@@ -8,9 +8,13 @@ import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.Hud;
 import net.minecraft.client.gui.components.ChatComponent;
+import net.minecraft.network.chat.Component;
+import net.minecraft.util.ARGB;
+import net.minecraft.util.Mth;
 import net.minecraft.world.entity.player.Player;
 import net.nukebob.chameleon.camera.ChameleonOrbitCamera;
 import net.nukebob.chameleon.render.ChameleonHud;
+import org.jspecify.annotations.Nullable;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.injection.At;
@@ -22,6 +26,18 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 public abstract class HudMixin {
     @Shadow
     private int overlayMessageTime;
+
+    @Shadow
+    public abstract Font getFont();
+
+    @Shadow
+    private @Nullable Component title;
+
+    @Shadow
+    private int titleTime;
+
+    @Shadow
+    private int titleFadeOutTime;
 
     @Inject(method = "getCameraPlayer", at = @At("HEAD"), cancellable = true)
     private void mc_chameleon$hudForPlayer(CallbackInfoReturnable<Player> cir) {
@@ -66,8 +82,22 @@ public abstract class HudMixin {
     }
 
     @Inject(method = "extractOverlayMessage", at = @At(value = "INVOKE", target = "Lorg/joml/Matrix3x2fStack;translate(FF)Lorg/joml/Matrix3x2f;", shift = At.Shift.AFTER))
-    private void animateOverlayMessage(GuiGraphicsExtractor graphics, DeltaTracker deltaTracker, CallbackInfo ci) {
+    private void mc_chameleon$animateOverlayMessage(GuiGraphicsExtractor graphics, DeltaTracker deltaTracker, CallbackInfo ci) {
         float t = this.overlayMessageTime - deltaTracker.getGameTimeDeltaPartialTick(false);
         graphics.pose().translate(0, 75f/3600f*t*t);
+    }
+
+    @Inject(method = "extractTitle", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/gui/GuiGraphicsExtractor;textWithBackdrop(Lnet/minecraft/client/gui/Font;Lnet/minecraft/network/chat/Component;IIII)V", ordinal = 0))
+    private void mc_chameleon$titleWithBackdrop(GuiGraphicsExtractor graphics, DeltaTracker deltaTracker, CallbackInfo ci) {
+        if (this.title==null) return;
+        int titleWidth = getFont().width(this.title);
+        float alpha = 1;
+        float t = this.titleTime - deltaTracker.getGameTimeDeltaPartialTick(false);
+        if (this.titleTime <= this.titleFadeOutTime) {
+            alpha = t / this.titleFadeOutTime;
+        }
+
+        alpha = Mth.clamp(alpha, 0, 1);
+        graphics.fill(-titleWidth/2-2, -10-2, titleWidth/2+2, -10-2+getFont().lineHeight+2, ARGB.black((int)(alpha*255*0.75f)));
     }
 }

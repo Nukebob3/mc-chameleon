@@ -33,19 +33,27 @@ public class GameConfigCommand {
             var fieldNode = Commands.literal(fieldName);
 
             if (fieldType == boolean.class || fieldType == Boolean.class) {
-                fieldNode.then(Commands.argument("value", BoolArgumentType.bool())
+                fieldNode
+                        .executes(ctx -> getValue(ctx, field))
+                        .then(Commands.argument("value", BoolArgumentType.bool())
                         .executes(ctx -> setValue(ctx, field, BoolArgumentType.getBool(ctx, "value"))));
             }
             else if (fieldType == int.class || fieldType == Integer.class) {
-                fieldNode.then(Commands.argument("value", IntegerArgumentType.integer())
+                fieldNode
+                        .executes(ctx -> getValue(ctx, field))
+                        .then(Commands.argument("value", IntegerArgumentType.integer())
                         .executes(ctx -> setValue(ctx, field, IntegerArgumentType.getInteger(ctx, "value"))));
             }
             else if (fieldType == float.class || fieldType == Float.class) {
-                fieldNode.then(Commands.argument("value", FloatArgumentType.floatArg())
+                fieldNode
+                        .executes(ctx -> getValue(ctx, field))
+                        .then(Commands.argument("value", FloatArgumentType.floatArg())
                         .executes(ctx -> setValue(ctx, field, FloatArgumentType.getFloat(ctx, "value"))));
             }
             else if (fieldType == String.class) {
-                fieldNode.then(Commands.argument("value", StringArgumentType.string())
+                fieldNode
+                        .executes(ctx -> getValue(ctx, field))
+                        .then(Commands.argument("value", StringArgumentType.string())
                         .executes(ctx -> setValue(ctx, field, StringArgumentType.getString(ctx, "value"))));
             }
 
@@ -53,6 +61,18 @@ public class GameConfigCommand {
         }
 
         return baseCommand;
+    }
+
+    private static int getValue(CommandContext<CommandSourceStack> ctx, Field field) {
+        try {
+            GameConfig configInstance = GameConfig.loadConfig();
+            Object value = field.get(configInstance);
+            ctx.getSource().sendSuccess(() -> Component.literal("Current value of §a" + field.getName() + "§r is §b" + value), false);
+            return 1;
+        } catch (IllegalAccessException e) {
+            ctx.getSource().sendFailure(Component.literal("Failed to read configuration property: " + field.getName()));
+            return 0;
+        }
     }
 
     private static int setValue(CommandContext<CommandSourceStack> ctx, Field field, Object value) {

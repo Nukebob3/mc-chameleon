@@ -9,5 +9,10 @@
 
   "lock.mc-chameleon.reason": "Locked by MC Chameleon",
 
-  "item.mc-chameleon.gun": "Gun"
+  "item.mc-chameleon.gun": "Gun",
+
+  "subtitles.chameleon.whistle": "Whistle",
+  "subtitles.chameleon.fart": "Whistle(fart)",
+  "subtitles.chameleon.bell_start": "Bell",
+  "subtitles.chameleon.bell_end": "Bell - Game Over"
 }

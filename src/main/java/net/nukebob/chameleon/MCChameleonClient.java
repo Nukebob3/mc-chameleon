@@ -170,7 +170,8 @@ public class MCChameleonClient implements ClientModInitializer {
             UUID uuid = client.player.getUUID();
             PoseTracker poseTracker = POSES.computeIfAbsent(uuid, k -> new PoseTracker());
             if (Keybinds.openPoseScreen.consumeClick()) {
-                if (!TeamControl.isChameleon(client.player.getTeam())) return;
+                if (!TeamControl.isChameleonStrict(client.player.getTeam())) return;
+                if (client.player.isSpectator()) return;
 
                 Poses currentPose = poseTracker.getTargetPos();
 
@@ -192,6 +193,10 @@ public class MCChameleonClient implements ClientModInitializer {
             }
             if (!(client.gui.screen() instanceof PaintScreen)&&!camera.isInFreeCam()) {
                 if (IdleTracker.checkAutoDisable(client.player)) {
+                    if (TeamControl.isLocked(client.player.getTeam())) {
+                        IdleTracker.preventDisable(client.player);
+                        return;
+                    }
                     if (camera.isActive()&&!GameType.SPECTATOR.equals(client.player.gameMode())) {
                         camera.deactivate(client.player);
                         client.setCameraEntity(client.player);

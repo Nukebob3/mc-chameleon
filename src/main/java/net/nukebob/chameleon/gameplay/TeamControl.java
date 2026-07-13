@@ -3,6 +3,7 @@ package net.nukebob.chameleon.gameplay;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.scores.PlayerTeam;
+import net.minecraft.world.scores.Team;
 import net.nukebob.chameleon.MCChameleon;
 
 public class TeamControl {
@@ -25,9 +26,27 @@ public class TeamControl {
         TeamControl.hunters = hunters;
     }
 
+    public static void nameTagVisibility(boolean normal) {
+        PlayerTeam chameleonFound = MCChameleon.SERVER.getScoreboard().getPlayerTeam("chameleonFound");
+        PlayerTeam chameleonNotFound = MCChameleon.SERVER.getScoreboard().getPlayerTeam("chameleonNotFound");
+        chameleons.setNameTagVisibility(normal?Team.Visibility.HIDE_FOR_OTHER_TEAMS: Team.Visibility.ALWAYS);
+        if (chameleonFound!=null) chameleonFound.setNameTagVisibility(normal?Team.Visibility.HIDE_FOR_OTHER_TEAMS: Team.Visibility.ALWAYS);
+        if (chameleonNotFound!=null) chameleonNotFound.setNameTagVisibility(normal?Team.Visibility.HIDE_FOR_OTHER_TEAMS: Team.Visibility.ALWAYS);
+        hunters.setNameTagVisibility(Team.Visibility.ALWAYS);
+    }
+
+    public static boolean isChameleonStrict(PlayerTeam team) {
+        if (team==null) return false;
+        return team.getName().equals("chameleon");
+    }
     public static boolean isChameleon(PlayerTeam team) {
         if (team==null) return false;
         return team.getName().contains("chameleon");
+    }
+
+    public static boolean isChameleonUnfound(PlayerTeam team) {
+        if (team==null) return false;
+        return team.getName().equals("chameleon")||team.getName().equals("chameleonNotFound");
     }
 
     public static boolean isHunter(PlayerTeam team) {

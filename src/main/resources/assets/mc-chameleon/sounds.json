@@ -10,5 +10,17 @@
     "sounds": [
       "mc-chameleon:fart"
     ]
+  },
+  "bell_start": {
+    "subtitle": "subtitles.chameleon.bell_start",
+    "sounds": [
+      "mc-chameleon:bell_start"
+    ]
+  },
+  "bell_end": {
+    "subtitle": "subtitles.chameleon.bell_end",
+    "sounds": [
+      "mc-chameleon:bell_end"
+    ]
   }
 }

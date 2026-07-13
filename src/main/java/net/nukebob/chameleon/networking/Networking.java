@@ -19,6 +19,7 @@ import net.minecraft.world.phys.Vec3;
 import net.nukebob.chameleon.MCChameleon;
 import net.nukebob.chameleon.MCChameleonClient;
 import net.nukebob.chameleon.config.GameConfig;
+import net.nukebob.chameleon.gameplay.Game;
 import net.nukebob.chameleon.gameplay.PoseTracker;
 import net.nukebob.chameleon.gameplay.Poses;
 import net.nukebob.chameleon.gameplay.TeamControl;
@@ -69,6 +70,9 @@ public class Networking {
         ClientPlayNetworking.registerGlobalReceiver(Payloads.ClientBoundPosePayload.TYPE, (payload, context) -> {
             MCChameleonClient.POSES.computeIfAbsent(payload.uuid(), uuid -> new PoseTracker()).setTargetPose(payload.pose()==-1?null:Poses.values()[payload.pose()]);
         });
+        ClientPlayNetworking.registerGlobalReceiver(Payloads.ClientBoundClearPosesPayload.TYPE, (payload, context) -> {
+            MCChameleonClient.POSES.clear();
+        });
         ClientPlayNetworking.registerGlobalReceiver(Payloads.ClientBoundShotPayload.TYPE, (payload, context) -> {
             context.client().execute(() -> MCChameleonClient.shots.add(new GunBeamRenderer(payload.start(), payload.end())));
         });
@@ -77,8 +81,15 @@ public class Networking {
                 GameHud.time=payload.time();
                 GameHud.maxTime= payload.maxTime();
                 GameHud.whistle=payload.whistle();
-                GameHud.hiders=payload.hiders();
-                GameHud.seekers=payload.seekers();
+                GameHud.subtitle = payload.subtitle();
+
+                GameHud.timeSinceUpdate = 0;
+            });
+        });
+        ClientPlayNetworking.registerGlobalReceiver(Payloads.ClientBoundGameHudPlayersPayload.TYPE, (payload, context) -> {
+            context.client().execute(() -> {
+                GameHud.hiders = payload.hiders();
+                GameHud.seekers = payload.seekers();
             });
         });
     }
@@ -124,6 +135,7 @@ public class Networking {
                     if (payload.hit().equals(player.getUUID())&& TeamControl.isChameleon(player.getTeam())) {
                         PlayerLookup.all(context.server()).forEach(p -> p.sendOverlayMessage(Component.literal(context.player().getPlainTextName()).withColor(0xFFebae34).append(Component.literal(" found ").withColor(0xFFFFFFFF)).append(Component.literal(player.getPlainTextName()).withColor(0xFF27dbd8))));
                         player.setGameMode(GameType.SPECTATOR);
+                        Game.updatePlayerCount();
                     }
                 });
                 spawnFirework(context.player(), !payload.hit().equals(new UUID(0,0)), payload.target());
