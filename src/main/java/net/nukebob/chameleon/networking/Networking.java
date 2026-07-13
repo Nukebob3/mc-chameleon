@@ -19,10 +19,7 @@ import net.minecraft.world.phys.Vec3;
 import net.nukebob.chameleon.MCChameleon;
 import net.nukebob.chameleon.MCChameleonClient;
 import net.nukebob.chameleon.config.GameConfig;
-import net.nukebob.chameleon.gameplay.Game;
-import net.nukebob.chameleon.gameplay.PoseTracker;
-import net.nukebob.chameleon.gameplay.Poses;
-import net.nukebob.chameleon.gameplay.TeamControl;
+import net.nukebob.chameleon.gameplay.*;
 import net.nukebob.chameleon.render.GameHud;
 import net.nukebob.chameleon.render.GunBeamRenderer;
 import net.nukebob.chameleon.sound.ChameleonSounds;
@@ -113,6 +110,7 @@ public class Networking {
         });
         ServerPlayNetworking.registerGlobalReceiver(Payloads.ServerBoundWhistle.TYPE, (payload, context) -> {
             context.server().execute(() -> {
+                if (!(Game.state.equals(GameState.SEEK)||Game.state.equals(GameState.HIDE))) return;
 
                 var player = context.player();
 
@@ -125,20 +123,22 @@ public class Networking {
         });
         ServerPlayNetworking.registerGlobalReceiver(Payloads.ServerBoundShotPayload.TYPE, (payload, context) -> {
             context.server().execute(() -> {
+                boolean hitPlayer = !payload.hit().equals(new UUID(0,0));
                 context.player().level().playSound(null, context.player().getX(), context.player().getY(), context.player().getZ(), SoundEvents.CROSSBOW_SHOOT, SoundSource.PLAYERS, 1, 0.8f);
                 PlayerLookup.all(context.server()).forEach(player -> {
-                    if (!payload.hit().equals(new UUID(0,0))) player.playSound(SoundEvents.BELL_BLOCK, 1, 0.5f);
+                    if (hitPlayer) player.playSound(SoundEvents.BELL_BLOCK, 1, 0.5f);
                     if (!player.equals(context.player())) {
                         ServerPlayNetworking.send(player, new Payloads.ClientBoundShotPayload(context.player().position().add(context.player().getEyePosition()).scale(0.5), payload.target()));
                     }
 
-                    if (payload.hit().equals(player.getUUID())&& TeamControl.isChameleon(player.getTeam())) {
-                        PlayerLookup.all(context.server()).forEach(p -> p.sendOverlayMessage(Component.literal(context.player().getPlainTextName()).withColor(0xFFebae34).append(Component.literal(" found ").withColor(0xFFFFFFFF)).append(Component.literal(player.getPlainTextName()).withColor(0xFF27dbd8))));
-                        player.setGameMode(GameType.SPECTATOR);
-                        Game.updatePlayerCount();
-                    }
+                    if (hitPlayer&&Game.state.equals(GameState.SEEK))
+                        if (payload.hit().equals(player.getUUID())&& TeamControl.isChameleon(player.getTeam())) {
+                            PlayerLookup.all(context.server()).forEach(p -> p.sendOverlayMessage(Component.literal(context.player().getPlainTextName()).withColor(0xFFebae34).append(Component.literal(" found ").withColor(0xFFFFFFFF)).append(Component.literal(player.getPlainTextName()).withColor(0xFF27dbd8))));
+                            player.setGameMode(GameType.SPECTATOR);
+                            Game.updatePlayerCount();
+                        }
                 });
-                spawnFirework(context.player(), !payload.hit().equals(new UUID(0,0)), payload.target());
+                spawnFirework(context.player(), hitPlayer, payload.target());
             });
         });
     }

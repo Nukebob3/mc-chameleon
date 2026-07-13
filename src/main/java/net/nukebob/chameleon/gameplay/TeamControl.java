@@ -99,5 +99,8 @@ public class TeamControl {
         player.getAttributes().getInstance(Attributes.NAME_TAG_DISTANCE).setBaseValue(128);
         player.getAttributes().getInstance(Attributes.GRAVITY).setBaseValue(0.06);
         player.getAttributes().getInstance(Attributes.JUMP_STRENGTH).setBaseValue(0.25);
+        player.getAbilities().mayfly = false;
+        player.getAbilities().flying = false;
+        player.onUpdateAbilities();
     }
 }

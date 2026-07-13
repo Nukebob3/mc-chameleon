@@ -14,6 +14,7 @@ import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.effect.MobEffects;
+import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.GameType;
 import net.minecraft.world.phys.AABB;
@@ -168,7 +169,6 @@ public class Game {
                 timer.setTime(config.seekTime);
                 //seeker tp
                 for (ServerPlayer player : PlayerLookup.all(MCChameleon.SERVER)) {
-                    if (!TeamControl.isChameleon(player.getTeam())) return;
                     player.connection.send(new ClientboundSetTitlesAnimationPacket(0, 60, 20));
                     player.connection.send(new ClientboundSetTitleTextPacket(Component.literal("Search Start!")));
                     playLocalSound(player, ChameleonSounds.BELL_START);
@@ -186,6 +186,10 @@ public class Game {
                         player.addEffect(new MobEffectInstance(MobEffects.GLOWING, -1, 0, true, false, false));
                     } else if (TeamControl.isHunter(player.getTeam())) {
                         TeamControl.assignHunterAnswer(player.getPlainTextName());
+                        player.getAbilities().mayfly = true;
+                        player.getAbilities().flying = true;
+                        player.getAttributes().getInstance(Attributes.AIR_DRAG_MODIFIER).setBaseValue(1);
+                        player.onUpdateAbilities();
                     }
                     player.setGameMode(GameType.ADVENTURE);
                 }
