@@ -3,8 +3,6 @@ package net.nukebob.chameleon.texture;
 import net.minecraft.core.Vec3i;
 import net.nukebob.chameleon.gameplay.Poses;
 
-import java.util.Arrays;
-
 public class BrushGeometry {
     private static final int TEXEL_COUNT = 1504;
 
@@ -24,8 +22,8 @@ public class BrushGeometry {
     private static final float[][] PIVOTS = {
             {0, 0, 0},      //head
             {0, 0, 0},      //body
-            {-5, 2, 0},     //right_arm
-            {5, 2, 0},      //left_arm
+            {5, -2, 0},     //right_arm
+            {-5, -2, 0},    //left_arm
             {-1.9f, 12, 0}, //right_leg
             {1.9f, 12, 0},  //left_leg
     };
@@ -108,9 +106,6 @@ public class BrushGeometry {
     }
 
     public static float[] getPosedPosition(int texelIndex, Poses pose) {
-        System.out.println("Part 2 pivot: " + Arrays.toString(PIVOTS[2]));
-        System.out.println("Part 2 box: " + Arrays.toString(BOXES[2]));
-
         if (texelIndex < 0 || texelIndex >= TEXEL_COUNT) return null;
         int part = ChameleonTexture.getPart(texelIndex);
         float[] rest = REST_POSITIONS[texelIndex];

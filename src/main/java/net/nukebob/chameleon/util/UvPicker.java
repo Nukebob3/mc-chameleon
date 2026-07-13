@@ -22,7 +22,7 @@ public final class UvPicker {
         int height = sourceTexture.getHeight(0);
 
         int x = Math.clamp(cursorX, 0, width - 1);
-        int flippedY = height - cursorY - 1;
+        int flippedY = height - cursorY;
         int y = Math.clamp(flippedY, 0, height - 1);
 
         int blockSize = sourceTexture.getFormat().blockSize();
@@ -48,13 +48,13 @@ public final class UvPicker {
 
     public static int decodeU(int argb) {
         int rawByte = ARGB.blue(argb);
-        int u = (int) ((rawByte / 255.0f) * 64.0f);
+        int u = (int) ((rawByte / 255.0f) * 63.0f)+1;
         return Math.clamp(u, 0, 63);
     }
 
     public static int decodeV(int argb) {
         int rawByte = ARGB.green(argb);
-        int v = (int) ((rawByte / 255.0f) * 64.0f);
+        int v = (int) ((rawByte / 255.0f) * 63.0f)+1;
         return Math.clamp(v, 0, 63);
     }
 }

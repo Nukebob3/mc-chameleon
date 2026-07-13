@@ -200,8 +200,8 @@ public class ChameleonTexture {
         return dimension.x*dimension.y;
     }
 
-    private static Pixel getFaceOffset(int part, int face) {
-        Pixel partOffset = switch (part) {
+    private static Pixel getPartOffset(int part) {
+        return switch (part) {
             case 0 -> new Pixel(8,8);
             case 1 -> new Pixel(20,20);
             case 2 -> new Pixel(44,20);
@@ -210,6 +210,10 @@ public class ChameleonTexture {
             case 5 -> new Pixel(20,52);
             default -> new Pixel(0);
         };
+    }
+
+    private static Pixel getFaceOffset(int part, int face) {
+        Pixel partOffset = getPartOffset(part);
         return partOffset.add(switch (face) {
             case 1 -> new Pixel(getFaceDimension(part, 0).x,0);
             case 2 -> new Pixel(getFaceDimension(part, 0).x+getFaceDimension(part, 1).x,0);
@@ -221,12 +225,31 @@ public class ChameleonTexture {
     }
 
     public static int reversePixelIndex(int x, int y) {
-        if (x < 0 || x >= 64 || y < 0 || y >= 64) return -1;
+        for (int part = 0; part < 6; part++) {
+            for (int face = 0; face < 6; face++) {
+                Pixel faceOffset = getFaceOffset(part, face);
+                Pixel faceDimension = getFaceDimension(part, face);
 
-        for (int i = 0; i < 1504; i++) {
-            Pixel pixel = pixelIndex(i);
-            if (pixel.x == x && pixel.y == y) {
-                return i;
+                int localX = x - faceOffset.x;
+                int localY = y - faceOffset.y;
+
+                if (localX >= 0 && localX < faceDimension.x && localY >= 0 && localY < faceDimension.y) {
+                    int pos = localY * faceDimension.x + localX;
+                    int faceLocalBase = 0;
+                    for (int f = 0; f < face; f++) {
+                        faceLocalBase += getFaceSize(part, f);
+                    }
+                    int localIndex = faceLocalBase + pos;
+
+                    int partBase = 0;
+                    if (part >= 1) partBase += 8*8*2+4*8*2+8*4*2;
+                    if (part >= 2) partBase += 8*12*2 + 4*12*2 + 4*8*2;
+                    if (part >= 3) partBase += 4*4*2 + 4*12*4;
+                    if (part >= 4) partBase += 4*4*2 + 4*12*4;
+                    if (part == 5) partBase += 4*4*2 + 4*12*4;
+
+                    return partBase + localIndex;
+                }
             }
         }
         return -1;
