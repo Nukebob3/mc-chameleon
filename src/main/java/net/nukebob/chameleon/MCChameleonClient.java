@@ -120,6 +120,8 @@ public class MCChameleonClient implements ClientModInitializer {
             if (camera==null) return;
             if (camera.isActive()) camera.tick();
 
+            if (!TeamControl.isChameleon(client.player.getTeam())) camera.setActive(false);
+
             wasCameraLockDown = handleKeyEdge(Keybinds.cameraLock, wasCameraLockDown, () -> {
                 if (!TeamControl.isChameleon(client.player.getTeam())&&!ChameleonOrbitCamera.getInstance().isActive()) return;
                 if (GameType.SPECTATOR.equals(client.player.gameMode())) return;
@@ -221,7 +223,13 @@ public class MCChameleonClient implements ClientModInitializer {
         if (level==null || level.players().isEmpty()) return null;
 
         List<Player> players = new ArrayList<>(level.players());
-        players.removeIf(player -> (!TeamControl.isHunter(player.getTeam())&&!TeamControl.isChameleon(player.getTeam()))||!GameType.ADVENTURE.equals(player.gameMode()));
+        //players.removeIf(player -> (!TeamControl.isHunter(player.getTeam())&&!TeamControl.isChameleon(player.getTeam()))||!GameType.ADVENTURE.equals(player.gameMode()));
+
+        players.removeIf(player -> {
+            boolean isPlayer = TeamControl.isChameleon(player.getTeam())||TeamControl.isHunter(player.getTeam());
+            boolean isSpectator = player.isSpectator();
+            return !isPlayer||isSpectator;
+        });
 
         if (players.isEmpty()) return null;
         for (int i = 0; i < players.size(); i++) {

@@ -3,6 +3,9 @@ package net.nukebob.chameleon.config;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import net.fabricmc.loader.api.FabricLoader;
+import net.minecraft.resources.Identifier;
+import net.minecraft.world.phys.Vec2;
+import net.minecraft.world.phys.Vec3;
 import net.nukebob.chameleon.MCChameleon;
 
 import java.io.File;
@@ -21,6 +24,10 @@ public class GameConfig {
     public int seekTime = 300;
     public int answerCheckTime = 30;
     public float hunterPercent = 0.2f;
+
+    public Identifier mapLevel;
+    public Vec3 mapSpawn;
+    public Vec2 mapSpawnRotation;
 
     public static synchronized GameConfig loadConfig() {
         if (config!=null) return config;

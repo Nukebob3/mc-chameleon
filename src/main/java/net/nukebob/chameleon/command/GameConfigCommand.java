@@ -8,8 +8,14 @@ import com.mojang.brigadier.builder.LiteralArgumentBuilder;
 import com.mojang.brigadier.context.CommandContext;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.Commands;
+import net.minecraft.commands.arguments.IdentifierArgument;
+import net.minecraft.commands.arguments.coordinates.Vec2Argument;
+import net.minecraft.commands.arguments.coordinates.Vec3Argument;
 import net.minecraft.network.chat.Component;
+import net.minecraft.resources.Identifier;
 import net.minecraft.server.permissions.Permissions;
+import net.minecraft.world.phys.Vec2;
+import net.minecraft.world.phys.Vec3;
 import net.nukebob.chameleon.config.GameConfig;
 
 import java.lang.reflect.Field;
@@ -36,25 +42,42 @@ public class GameConfigCommand {
                 fieldNode
                         .executes(ctx -> getValue(ctx, field))
                         .then(Commands.argument("value", BoolArgumentType.bool())
-                        .executes(ctx -> setValue(ctx, field, BoolArgumentType.getBool(ctx, "value"))));
+                                .executes(ctx -> setValue(ctx, field, BoolArgumentType.getBool(ctx, "value"))));
             }
             else if (fieldType == int.class || fieldType == Integer.class) {
                 fieldNode
                         .executes(ctx -> getValue(ctx, field))
                         .then(Commands.argument("value", IntegerArgumentType.integer())
-                        .executes(ctx -> setValue(ctx, field, IntegerArgumentType.getInteger(ctx, "value"))));
+                                .executes(ctx -> setValue(ctx, field, IntegerArgumentType.getInteger(ctx, "value"))));
             }
             else if (fieldType == float.class || fieldType == Float.class) {
                 fieldNode
                         .executes(ctx -> getValue(ctx, field))
                         .then(Commands.argument("value", FloatArgumentType.floatArg())
-                        .executes(ctx -> setValue(ctx, field, FloatArgumentType.getFloat(ctx, "value"))));
+                                .executes(ctx -> setValue(ctx, field, FloatArgumentType.getFloat(ctx, "value"))));
             }
             else if (fieldType == String.class) {
                 fieldNode
                         .executes(ctx -> getValue(ctx, field))
                         .then(Commands.argument("value", StringArgumentType.string())
-                        .executes(ctx -> setValue(ctx, field, StringArgumentType.getString(ctx, "value"))));
+                                .executes(ctx -> setValue(ctx, field, StringArgumentType.getString(ctx, "value"))));
+            }
+            else if (fieldType == Vec3.class) {
+                fieldNode
+                        .executes(ctx -> getValue(ctx, field))
+                        .then(Commands.argument("value", Vec3Argument.vec3())
+                                .executes(ctx -> setValue(ctx, field, Vec3Argument.getVec3(ctx, "value"))));
+            }
+            else if (fieldType == Vec2.class) {
+                fieldNode
+                        .executes(ctx -> getValue(ctx, field))
+                        .then(Commands.argument("value", Vec2Argument.vec2())
+                                .executes(ctx -> setValue(ctx, field, Vec2Argument.getVec2(ctx, "value"))));
+            } else if (fieldType == Identifier.class) {
+                fieldNode
+                        .executes(ctx -> getValue(ctx, field))
+                        .then(Commands.argument("value", IdentifierArgument.id())
+                                .executes(ctx -> setValue(ctx, field, IdentifierArgument.getId(ctx, "value"))));
             }
 
             baseCommand.then(fieldNode);

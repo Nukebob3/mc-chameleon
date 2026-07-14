@@ -1,6 +1,7 @@
 package net.nukebob.chameleon.keybind;
 
 import com.google.common.collect.ImmutableSet;
+import net.minecraft.client.CloudStatus;
 import net.minecraft.client.Options;
 import net.minecraft.server.level.ParticleStatus;
 import net.minecraft.world.entity.player.PlayerModelPart;
@@ -38,7 +39,8 @@ public class SettingsLock {
             "entityShadows",
             "gamma",
             "particles",
-            "modelPart.cape"
+            "modelPart.cape",
+            "renderClouds"
     );
 
     public static void applyLockedSettings(Options options) {
@@ -46,5 +48,6 @@ public class SettingsLock {
         options.gamma().set(1.0);
         options.particles().set(ParticleStatus.MINIMAL);
         options.setModelPart(PlayerModelPart.CAPE, false);
+        options.cloudStatus().set(CloudStatus.OFF);
     }
 }

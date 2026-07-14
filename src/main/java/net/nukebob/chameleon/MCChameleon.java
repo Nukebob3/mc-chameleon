@@ -10,15 +10,13 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.resources.Identifier;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerLevel;
+import net.minecraft.world.level.GameType;
 import net.minecraft.world.level.levelgen.structure.templatesystem.StructurePlaceSettings;
 import net.minecraft.world.level.levelgen.structure.templatesystem.StructureTemplateManager;
 import net.minecraft.world.scores.PlayerTeam;
 import net.minecraft.world.scores.Team;
 import net.minecraft.world.scores.TeamColor;
-import net.nukebob.chameleon.command.CanvasCommand;
-import net.nukebob.chameleon.command.EndCommand;
-import net.nukebob.chameleon.command.GameConfigCommand;
-import net.nukebob.chameleon.command.StartCommand;
+import net.nukebob.chameleon.command.*;
 import net.nukebob.chameleon.config.GameConfig;
 import net.nukebob.chameleon.dimension.ChameleonDimensions;
 import net.nukebob.chameleon.gameplay.*;
@@ -95,10 +93,7 @@ public class MCChameleon implements ModInitializer {
 			ServerLevel mapsLevel = server.getLevel(ChameleonDimensions.MAPS);
 			if (mapsLevel!=null) {
 				StructureTemplateManager structureTemplateManager = server.getStructureManager();
-				structureTemplateManager.get(MCChameleon.id("minecraft_map/0")).get().placeInWorld(mapsLevel, new BlockPos(0,100,0), BlockPos.ZERO, new StructurePlaceSettings(), mapsLevel.getRandom(), 0);
-				structureTemplateManager.get(MCChameleon.id("minecraft_map/1")).get().placeInWorld(mapsLevel, new BlockPos(-29,100,0), BlockPos.ZERO, new StructurePlaceSettings(), mapsLevel.getRandom(), 0);
-				structureTemplateManager.get(MCChameleon.id("minecraft_map/2")).get().placeInWorld(mapsLevel, new BlockPos(0,100,48), BlockPos.ZERO, new StructurePlaceSettings(), mapsLevel.getRandom(), 0);
-				structureTemplateManager.get(MCChameleon.id("minecraft_map/3")).get().placeInWorld(mapsLevel, new BlockPos(-29,100,48), BlockPos.ZERO, new StructurePlaceSettings(), mapsLevel.getRandom(), 0);
+				structureTemplateManager.get(MCChameleon.id("minecraft_map")).get().placeInWorld(mapsLevel, new BlockPos(0,100,0), BlockPos.ZERO, new StructurePlaceSettings(), mapsLevel.getRandom(), 0);
 			}
 		});
 
@@ -115,6 +110,7 @@ public class MCChameleon implements ModInitializer {
 			commandDispatcher.register(GameConfigCommand.command);
 			commandDispatcher.register(StartCommand.command);
 			commandDispatcher.register(EndCommand.command);
+			commandDispatcher.register(SetMapCommand.command);
 		}));
 
 		ServerPlayConnectionEvents.JOIN.register((listener, sender, server) -> {
@@ -126,6 +122,10 @@ public class MCChameleon implements ModInitializer {
 				sender.sendPacket(new Payloads.ClientBoundPosePayload(uuid, pose == null ? -1 : pose.ordinal()));
 			}));
 			AttributeControl.setCommonAttributes(listener.player);
+			TeamControl.applyLobbyAttributes(listener.player);
+			listener.player.setGameMode(Game.running?GameType.SPECTATOR:GameType.ADVENTURE);
+			server.getScoreboard().removePlayerFromTeam(listener.player.getPlainTextName());
+
 		});
 		ServerPlayConnectionEvents.DISCONNECT.register((listener, server) -> {
 			POSES.remove(listener.player.getUUID());

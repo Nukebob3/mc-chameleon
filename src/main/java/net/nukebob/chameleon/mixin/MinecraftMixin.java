@@ -51,6 +51,7 @@ public abstract class MinecraftMixin {
 
     @Inject(method = "startAttack", at = @At("HEAD"), cancellable = true)
     private void cancelAttack(CallbackInfoReturnable<Boolean> cir) {
+        if (player!=null&&player.isCreative()) return;
         cir.setReturnValue(true);
         if (player!=null&&player.getMainHandItem().is(ChameleonItems.GUN)&&!player.getCooldowns().isOnCooldown(player.getMainHandItem())) {
             float partialTicks = deltaTracker.getGameTimeDeltaPartialTick(false);
@@ -83,6 +84,7 @@ public abstract class MinecraftMixin {
 
     @Inject(method = "startUseItem", at = @At("HEAD"), cancellable = true)
     private void cancelUse(CallbackInfo ci) {
+        if (player!=null&&player.isCreative()) return;
         ci.cancel();
     }
 

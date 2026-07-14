@@ -102,5 +102,6 @@ public class TeamControl {
         player.getAbilities().mayfly = false;
         player.getAbilities().flying = false;
         player.onUpdateAbilities();
+        player.setInvulnerable(true);
     }
 }

@@ -3,10 +3,12 @@ package net.nukebob.chameleon.gameplay;
 import net.fabricmc.fabric.api.networking.v1.PlayerLookup;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
 import net.minecraft.core.Holder;
+import net.minecraft.core.registries.Registries;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.protocol.game.ClientboundSetTitleTextPacket;
 import net.minecraft.network.protocol.game.ClientboundSetTitlesAnimationPacket;
 import net.minecraft.network.protocol.game.ClientboundSoundPacket;
+import net.minecraft.resources.ResourceKey;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
@@ -32,8 +34,7 @@ import java.util.Collections;
 import java.util.Set;
 
 public class Game {
-    Vec3 spawn;
-    String dimension;
+    public static GameMap map;
 
     public static boolean running = false;
     public static int whistleTime;
@@ -44,6 +45,12 @@ public class Game {
     public static void start() {
         running = true;
         GameConfig config = GameConfig.loadConfig();
+
+        map = new GameMap(
+                ResourceKey.create(Registries.DIMENSION, GameConfig.loadConfig().mapLevel),
+                GameConfig.loadConfig().mapSpawn,
+                GameConfig.loadConfig().mapSpawnRotation
+        );
 
         state = GameState.PREGAME;
         whistleTime = config.whistleFrequency;
@@ -158,12 +165,13 @@ public class Game {
                 TeamControl.nameTagVisibility(true);
                 //hider tp
                 for (ServerPlayer player : PlayerLookup.all(MCChameleon.SERVER)) {
-                    if (!TeamControl.isChameleon(player.getTeam())) return;
+                    if (!TeamControl.isChameleon(player.getTeam())) continue;
                     player.connection.send(new ClientboundSetTitlesAnimationPacket(0, 60, 20));
                     player.connection.send(new ClientboundSetTitleTextPacket(Component.literal("Hide Start!")));
                     playLocalSound(player, ChameleonSounds.BELL_START);
 
-                    //minecraft map -> 8.5 102.9375 48.5
+
+                    mapTp(player);
                 }
             }
             case HIDE -> {
@@ -174,6 +182,10 @@ public class Game {
                     player.connection.send(new ClientboundSetTitlesAnimationPacket(0, 60, 20));
                     player.connection.send(new ClientboundSetTitleTextPacket(Component.literal("Search Start!")));
                     playLocalSound(player, ChameleonSounds.BELL_START);
+
+                    if (!TeamControl.isHunter(player.getTeam())) continue;
+
+                    mapTp(player);
                 }
             }
             case SEEK -> {
@@ -210,6 +222,12 @@ public class Game {
 
     public static void playLocalSound(ServerPlayer player, SoundEvent soundEvent) {
         player.connection.send(new ClientboundSoundPacket(Holder.direct(soundEvent), SoundSource.MASTER, player.getX(), player.getY(), player.getZ(), 1, 1, 0));
+    }
+
+    public static void mapTp(ServerPlayer player) {
+        ServerLevel level = MCChameleon.SERVER.getLevel(map.level);
+        if (level==null) return;
+        player.teleportTo(level, map.spawn.x(), map.spawn.y(), map.spawn.z(), Set.of(), map.rotation.y, map.rotation.x, true);
     }
 
     public static void winTitle() {
