@@ -1,6 +1,7 @@
 package net.nukebob.chameleon.texture;
 
 import net.minecraft.core.Vec3i;
+import net.minecraft.world.phys.Vec3;
 import net.nukebob.chameleon.gameplay.Poses;
 
 public class BrushGeometry {
@@ -197,6 +198,22 @@ public class BrushGeometry {
         }
 
         return v;
+    }
+
+    public static Vec3i local3dPos(int x, int y, int face, int part) {
+        return switch (face) {
+            case 0 -> new Vec3i(x, y, 0);
+            case 1 -> new Vec3i(ChameleonTexture.getFaceDimension(part, 0).x, y, x);
+            case 2 -> new Vec3i(ChameleonTexture.getFaceDimension(part, 2).x-(x), y, ChameleonTexture.getFaceDimension(part, 1).x);
+            case 3 -> new Vec3i(0, y, ChameleonTexture.getFaceDimension(part, 3).x-(x));
+            case 4 -> new Vec3i(x, 0, ChameleonTexture.getFaceDimension(part, 4).y-y);
+            case 5 -> new Vec3i(x, ChameleonTexture.getFaceDimension(part,0).y, ChameleonTexture.getFaceDimension(part, 5).y-y);
+            default -> new Vec3i(0,0,0);
+        };
+    }
+
+    public static float distance(Vec3i a, Vec3i b) {
+        return (float) new Vec3(a.subtract(b)).length();
     }
 
     public static float distance(int texelA, int texelB) {
