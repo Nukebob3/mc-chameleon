@@ -37,10 +37,17 @@
   },
   "mixins": [
     "AvatarMixin",
+    "BasePressurePlateBlockMixin",
+    "BigDripleafBlockMixin",
     "EntityMixin",
     "FarmlandCropMixin",
     "InventoryMixin",
     "LivingEntityMixin",
-    "PlayerMixin"
+    "PlayerMixin",
+    "SculkSensorBlockMixin",
+    "SculkShriekerBlockMixin",
+    "TripWireBlockMixin",
+    "TurtleEggBlockMixin",
+    "VibrationSystemMixin"
   ]
 }

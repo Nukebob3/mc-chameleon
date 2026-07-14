@@ -47,7 +47,7 @@ public class ChatComponentMixin {
 
     @WrapOperation(method = "extractRenderState(Lnet/minecraft/client/gui/components/ChatComponent$ChatGraphicsAccess;IILnet/minecraft/client/gui/components/ChatComponent$DisplayMode;)V",
             at = @At(value = "INVOKE", target = "Lnet/minecraft/util/Mth;ceil(F)I"))
-    private int setMaxWidth(float v, Operation<Integer> original) {
+    private int mc_chameleon$setMaxWidth(float v, Operation<Integer> original) {
         int screenWidth = this.minecraft.getWindow().getGuiScaledWidth();
         float scale = this.minecraft.options.chatScale().get().floatValue();
         float chatStartX = screenWidth / 2 + 30 - 2;

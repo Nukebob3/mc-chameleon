@@ -121,6 +121,7 @@ public class MCChameleonClient implements ClientModInitializer {
             if (camera.isActive()) camera.tick();
 
             if (!TeamControl.isChameleon(client.player.getTeam())) camera.setActive(false);
+            if (client.gui.screen() instanceof PaintScreen && (client.player.isSpectator()||!TeamControl.isChameleon(client.player.getTeam()))) client.gui.setScreen(null);
 
             wasCameraLockDown = handleKeyEdge(Keybinds.cameraLock, wasCameraLockDown, () -> {
                 if (!TeamControl.isChameleon(client.player.getTeam())&&!ChameleonOrbitCamera.getInstance().isActive()) return;
@@ -189,6 +190,7 @@ public class MCChameleonClient implements ClientModInitializer {
                 if (nextPose==null) climbing = false;
             }
             if (client.player.isSprinting()) {
+                if (client.player.isSpectator()||!TeamControl.isChameleonStrict(client.player.getTeam())) return;
                 poseTracker.setTargetPose(null);
                 ClientPlayNetworking.send(new Payloads.ServerBoundPosePayload(null));
                 client.player.refreshDimensions();

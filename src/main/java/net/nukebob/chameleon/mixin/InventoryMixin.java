@@ -13,7 +13,7 @@ public class InventoryMixin {
     private int selected;
 
     @Inject(method = "setSelectedSlot", at = @At("HEAD"), cancellable = true)
-    private void setToFirstSlot(int selected, CallbackInfo ci) {
+    private void mc_chameleon$setToFirstSlot(int selected, CallbackInfo ci) {
         this.selected = 0;
         ci.cancel();
     }

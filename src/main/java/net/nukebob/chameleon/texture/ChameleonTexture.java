@@ -85,23 +85,26 @@ public class ChameleonTexture {
             Pixel pixel = pixelIndex(i);
             image.setPixel(pixel.x, pixel.y, pixels[i]);
         }
-        MCChameleonClient.localSkinCache = pixels;
+        if (Minecraft.getInstance().player!=null&&uuid.equals(Minecraft.getInstance().player.getUUID()))
+            MCChameleonClient.localSkinCache = pixels;
         upload();
     }
 
     public void updatePixelsSpecific(ColourLocation.ColLoc[] pixels) {
         ensureAllocated();
 
-        if (MCChameleonClient.localSkinCache == null || MCChameleonClient.localSkinCache.length < 1504) {
-            MCChameleonClient.localSkinCache = new int[1504];
-        }
+        if (Minecraft.getInstance().player!=null&&uuid.equals(Minecraft.getInstance().player.getUUID()))
+            if (MCChameleonClient.localSkinCache == null || MCChameleonClient.localSkinCache.length < 1504) {
+                MCChameleonClient.localSkinCache = new int[1504];
+            }
 
         for (ColourLocation.ColLoc colourLocation : pixels) {
-            if (colourLocation.location() == -1 || colourLocation.location() >= MCChameleonClient.localSkinCache.length) continue;
+            if (colourLocation.location() == -1 || colourLocation.location() >= 1504) continue;
 
             Pixel pixel = pixelIndex(colourLocation.location());
             image.setPixel(pixel.x, pixel.y, colourLocation.colour());
-            MCChameleonClient.localSkinCache[colourLocation.location()] = colourLocation.colour();
+            if (Minecraft.getInstance().player!=null&&uuid.equals(Minecraft.getInstance().player.getUUID()))
+                MCChameleonClient.localSkinCache[colourLocation.location()] = colourLocation.colour();
         }
         upload();
     }
@@ -110,13 +113,15 @@ public class ChameleonTexture {
         if (colourLocation.location() == -1) return;
         ensureAllocated();
 
-        if (MCChameleonClient.localSkinCache == null || MCChameleonClient.localSkinCache.length < 1504) {
-            MCChameleonClient.localSkinCache = new int[1504];
-        }
+        if (Minecraft.getInstance().player!=null&&uuid.equals(Minecraft.getInstance().player.getUUID()))
+            if (MCChameleonClient.localSkinCache == null || MCChameleonClient.localSkinCache.length < 1504) {
+                MCChameleonClient.localSkinCache = new int[1504];
+            }
 
         Pixel pixel = pixelIndex(colourLocation.location());
         image.setPixel(pixel.x, pixel.y, colourLocation.colour());
-        MCChameleonClient.localSkinCache[colourLocation.location()] = colourLocation.colour();
+        if (Minecraft.getInstance().player!=null&&uuid.equals(Minecraft.getInstance().player.getUUID()))
+            MCChameleonClient.localSkinCache[colourLocation.location()] = colourLocation.colour();
         upload();
     }
 

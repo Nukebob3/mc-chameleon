@@ -43,14 +43,10 @@ public abstract class MinecraftMixin {
 
     @Shadow
     @Nullable
-    public HitResult hitResult;
-
-    @Shadow
-    @Nullable
     public Entity crosshairPickEntity;
 
     @Inject(method = "startAttack", at = @At("HEAD"), cancellable = true)
-    private void cancelAttack(CallbackInfoReturnable<Boolean> cir) {
+    private void mc_chameleon$cancelAttack(CallbackInfoReturnable<Boolean> cir) {
         if (player!=null&&player.isCreative()) return;
         cir.setReturnValue(true);
         if (player!=null&&player.getMainHandItem().is(ChameleonItems.GUN)&&!player.getCooldowns().isOnCooldown(player.getMainHandItem())) {
@@ -61,7 +57,7 @@ public abstract class MinecraftMixin {
             UUID hit = new UUID(0, 0);
             Vec3 lookVec = this.player.getLookAngle();
 
-            HitResult raycast = raycast(player, rayStart, lookVec, 100);
+            HitResult raycast = mc_chameleon$raycast(player, rayStart, lookVec, 100);
             if (raycast==null||raycast.getType().equals(HitResult.Type.MISS)) {
                 end = rayStart.add(lookVec.scale(100));
             } else if (raycast instanceof EntityHitResult entityHitResult) {
@@ -83,13 +79,13 @@ public abstract class MinecraftMixin {
     }
 
     @Inject(method = "startUseItem", at = @At("HEAD"), cancellable = true)
-    private void cancelUse(CallbackInfo ci) {
+    private void mc_chameleon$cancelUse(CallbackInfo ci) {
         if (player!=null&&player.isCreative()) return;
         ci.cancel();
     }
 
     @Unique
-    private HitResult raycast(Player player, Vec3 start, Vec3 lookVec, double maxDistance) {
+    private HitResult mc_chameleon$raycast(Player player, Vec3 start, Vec3 lookVec, double maxDistance) {
         Level level = player.level();
         Vec3 currentPos = start;
         Vec3 direction = lookVec.normalize();
