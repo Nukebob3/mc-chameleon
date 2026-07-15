@@ -13,7 +13,6 @@
         }
       ],
       "structure_overrides": [
-        "mc-chameleon:lobby"
       ]
     }
   }

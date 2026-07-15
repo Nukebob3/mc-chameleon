@@ -3,6 +3,7 @@ package net.nukebob.chameleon.gameplay;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.scores.PlayerTeam;
+import net.minecraft.world.scores.Scoreboard;
 import net.minecraft.world.scores.Team;
 import net.nukebob.chameleon.MCChameleon;
 
@@ -12,6 +13,14 @@ public class TeamControl {
 
     public static PlayerTeam getChameleonsTeam() {
         return chameleons;
+    }
+
+    public static PlayerTeam getChameleonsTeam(Scoreboard scoreboard) {
+        return scoreboard.getPlayerTeam("chameleon");
+    }
+
+    public static PlayerTeam getHuntersTeam(Scoreboard scoreboard) {
+        return scoreboard.getPlayerTeam("hunter");
     }
 
     public static void setChameleonsTeam(PlayerTeam chameleons) {

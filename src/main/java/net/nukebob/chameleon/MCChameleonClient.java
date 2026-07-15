@@ -234,7 +234,7 @@ public class MCChameleonClient implements ClientModInitializer {
         players.removeIf(player -> {
             boolean isPlayer = TeamControl.isChameleon(player.getTeam())||TeamControl.isHunter(player.getTeam());
             boolean isSpectator = player.isSpectator();
-            boolean infection = TeamControl.getChameleonsTeam()!=null&&!player.equals(local)&&TeamControl.isChameleon(player.getTeam())&&TeamControl.getChameleonsTeam().getNameTagVisibility().equals(Team.Visibility.NEVER);
+            boolean infection = TeamControl.getChameleonsTeam(player.getTeam().getScoreboard())!=null&&!player.equals(local)&&TeamControl.isChameleon(player.getTeam())&&TeamControl.getChameleonsTeam(player.getTeam().getScoreboard()).getNameTagVisibility().equals(Team.Visibility.NEVER);
             return !isPlayer||isSpectator||infection;
         });
 

@@ -272,7 +272,7 @@ public class Game {
             if (level==null) return;
             if (!player.level().equals(level)) continue;
 
-            AABB box = new AABB(-89, 9, -43, -89 + 4, 9 + 3, -43 + 4);
+            AABB box = new AABB(7, 101, 7, 11, 104, 11);
             boolean onHunterPlatform = box.contains(player.position());
 
             if (onHunterPlatform) {
