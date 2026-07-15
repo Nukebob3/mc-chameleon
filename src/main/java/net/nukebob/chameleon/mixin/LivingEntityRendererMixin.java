@@ -59,6 +59,7 @@ public abstract class LivingEntityRendererMixin<T extends LivingEntity, S extend
                     avatarRenderState.showLeftSleeve=false;
                     avatarRenderState.showRightSleeve=false;
 
+                    if (TeamControl.getChameleonsTeam()==null) return;
                     if (!TeamControl.getChameleonsTeam().isAllowFriendlyFire()) cir.setReturnValue(RenderTypes.eyes(texture));
                     return;
                 }

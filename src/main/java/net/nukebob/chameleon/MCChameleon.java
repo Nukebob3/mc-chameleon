@@ -19,6 +19,7 @@ import net.minecraft.world.scores.TeamColor;
 import net.nukebob.chameleon.command.*;
 import net.nukebob.chameleon.config.GameConfig;
 import net.nukebob.chameleon.dimension.ChameleonDimensions;
+import net.nukebob.chameleon.dimension.LobbyPlacementData;
 import net.nukebob.chameleon.dimension.MapsPlacementData;
 import net.nukebob.chameleon.gameplay.*;
 import net.nukebob.chameleon.item.ChameleonItems;
@@ -101,6 +102,20 @@ public class MCChameleon implements ModInitializer {
 				boolean placed = structureTemplateManager.get(MCChameleon.id("minecraft_map"))
 						.orElseThrow()
 						.placeInWorld(mapsLevel, new BlockPos(0, 100, 0), BlockPos.ZERO, new StructurePlaceSettings(), mapsLevel.getRandom(), 0);
+				if (placed) placementData.markPlaced();
+				}
+			}
+			//make lobby
+			ServerLevel lobbyLevel = server.getLevel(ChameleonDimensions.LOBBY);
+			if (lobbyLevel != null) {
+				LobbyPlacementData placementData = lobbyLevel.getDataStorage()
+						.computeIfAbsent(LobbyPlacementData.TYPE);
+
+				if (!placementData.isPlaced()) {
+				StructureTemplateManager structureTemplateManager = server.getStructureManager();
+				boolean placed = structureTemplateManager.get(MCChameleon.id("lobby"))
+						.orElseThrow()
+						.placeInWorld(lobbyLevel, new BlockPos(0, 100, 0), BlockPos.ZERO, new StructurePlaceSettings(), lobbyLevel.getRandom(), 0);
 				if (placed) placementData.markPlaced();
 				}
 			}

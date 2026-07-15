@@ -308,7 +308,7 @@ public class Game {
 
             ServerLevel level = server.getLevel(ChameleonDimensions.LOBBY);
             if (level==null) return;
-            player.teleportTo(level, -86.5, 10.0, -43.5, Set.of(), 0, 0, true);
+            player.teleportTo(level, 9.5, 101.0, 5.5, Set.of(), 0, 0, true);
         }
     }
 
