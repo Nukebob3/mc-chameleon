@@ -16,6 +16,7 @@ import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.GameType;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.scores.Team;
 import net.nukebob.chameleon.camera.ChameleonOrbitCamera;
 import net.nukebob.chameleon.gameplay.IdleTracker;
 import net.nukebob.chameleon.gameplay.PoseTracker;
@@ -120,7 +121,10 @@ public class MCChameleonClient implements ClientModInitializer {
             if (camera==null) return;
             if (camera.isActive()) camera.tick();
 
-            if (!TeamControl.isChameleon(client.player.getTeam())) camera.setActive(false);
+            if (!TeamControl.isChameleon(client.player.getTeam())&&camera.isActive()) {
+                camera.setActive(false);
+                client.setCameraEntity(client.player);
+            }
             if (client.gui.screen() instanceof PaintScreen && (client.player.isSpectator()||!TeamControl.isChameleon(client.player.getTeam()))) client.gui.setScreen(null);
 
             wasCameraLockDown = handleKeyEdge(Keybinds.cameraLock, wasCameraLockDown, () -> {
@@ -230,7 +234,8 @@ public class MCChameleonClient implements ClientModInitializer {
         players.removeIf(player -> {
             boolean isPlayer = TeamControl.isChameleon(player.getTeam())||TeamControl.isHunter(player.getTeam());
             boolean isSpectator = player.isSpectator();
-            return !isPlayer||isSpectator;
+            boolean infection = !player.equals(local)&&TeamControl.isChameleon(player.getTeam())&&TeamControl.getChameleonsTeam().getNameTagVisibility().equals(Team.Visibility.NEVER);
+            return !isPlayer||isSpectator||infection;
         });
 
         if (players.isEmpty()) return null;

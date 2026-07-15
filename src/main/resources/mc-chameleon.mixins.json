@@ -27,7 +27,8 @@
     "OptionsMixin",
     "ScreenEffectRendererMixin",
     "ScrollWheelHandlerMixin",
-    "ShadowFeatureRendererMixin"
+    "ShadowFeatureRendererMixin",
+    "SpriteContentsAnimationStateMixin"
   ],
   "injectors": {
     "defaultRequire": 1
@@ -39,6 +40,7 @@
     "AvatarMixin",
     "BasePressurePlateBlockMixin",
     "BigDripleafBlockMixin",
+    "ClientLevelMixin",
     "EntityMixin",
     "FarmlandCropMixin",
     "InventoryMixin",

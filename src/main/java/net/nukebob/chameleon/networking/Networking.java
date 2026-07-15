@@ -134,7 +134,13 @@ public class Networking {
                     if (hitPlayer&&Game.state.equals(GameState.SEEK))
                         if (payload.hit().equals(player.getUUID())&& TeamControl.isChameleon(player.getTeam())) {
                             PlayerLookup.all(context.server()).forEach(p -> p.sendOverlayMessage(Component.literal(context.player().getPlainTextName()).withColor(0xFFebae34).append(Component.literal(" found ").withColor(0xFFFFFFFF)).append(Component.literal(player.getPlainTextName()).withColor(0xFF27dbd8))));
-                            player.setGameMode(GameType.SPECTATOR);
+
+                            if (GameConfig.loadConfig().isInfection) {
+                                Game.setSeeker(player);
+                                Game.mapTp(player);
+                            } else {
+                                player.setGameMode(GameType.SPECTATOR);
+                            }
                             Game.updatePlayerCount();
                         }
                 });

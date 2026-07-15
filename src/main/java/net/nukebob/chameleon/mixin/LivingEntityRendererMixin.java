@@ -8,6 +8,7 @@ import net.minecraft.client.renderer.entity.LivingEntityRenderer;
 import net.minecraft.client.renderer.entity.state.AvatarRenderState;
 import net.minecraft.client.renderer.entity.state.LivingEntityRenderState;
 import net.minecraft.client.renderer.rendertype.RenderType;
+import net.minecraft.client.renderer.rendertype.RenderTypes;
 import net.minecraft.client.renderer.state.level.CameraRenderState;
 import net.minecraft.resources.Identifier;
 import net.minecraft.world.entity.LivingEntity;
@@ -15,6 +16,7 @@ import net.minecraft.world.entity.player.Player;
 import net.nukebob.chameleon.MCChameleonClient;
 import net.nukebob.chameleon.accessor.PoseTrackerAccessor;
 import net.nukebob.chameleon.gameplay.PoseTracker;
+import net.nukebob.chameleon.gameplay.TeamControl;
 import net.nukebob.chameleon.render.ChameleonRenderTypes;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
@@ -34,19 +36,22 @@ public abstract class LivingEntityRendererMixin<T extends LivingEntity, S extend
     @Shadow
     protected abstract void setupRotations(S state, PoseStack poseStack, float bodyRot, float entityScale);
 
+    @Shadow
+    public abstract Identifier getTextureLocation(S state);
+
     @Inject(
             method = "getRenderType(Lnet/minecraft/client/renderer/entity/state/LivingEntityRenderState;ZZZ)Lnet/minecraft/client/renderer/rendertype/RenderType;",
             at = @At("RETURN"),
             cancellable = true
     )
-    private void mc_chameleon$modifyPlayerRenderType(LivingEntityRenderState state, boolean isBodyVisible, boolean forceTransparent, boolean appearGlowing, CallbackInfoReturnable<RenderType> cir) {
+    private void mc_chameleon$modifyPlayerRenderType(S state, boolean isBodyVisible, boolean forceTransparent, boolean appearGlowing, CallbackInfoReturnable<RenderType> cir) {
         RenderType originalType = cir.getReturnValue();
 
         if (originalType != null) {
             if (state instanceof AvatarRenderState avatarRenderState) {
-                Identifier texture = avatarRenderState.skin.body().texturePath();
+                Identifier texture = this.getTextureLocation(state);
 
-                if (state.scale!=1) {
+                if (state.scale<0.99) {
                     avatarRenderState.showHat=false;
                     avatarRenderState.showJacket=false;
                     avatarRenderState.showLeftPants=false;
@@ -54,10 +59,12 @@ public abstract class LivingEntityRendererMixin<T extends LivingEntity, S extend
                     avatarRenderState.showLeftSleeve=false;
                     avatarRenderState.showRightSleeve=false;
 
+                    if (!TeamControl.getChameleonsTeam().isAllowFriendlyFire()) cir.setReturnValue(RenderTypes.eyes(texture));
                     return;
                 }
 
-                cir.setReturnValue(ChameleonRenderTypes.entityGray(texture));
+                if (state.scale==1)
+                    cir.setReturnValue(ChameleonRenderTypes.entityGray(texture));
             }
         }
     }

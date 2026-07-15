@@ -25,6 +25,10 @@ public class GameConfig {
     public int answerCheckTime = 30;
     public float hunterPercent = 0.2f;
 
+    public boolean isInfection = false;
+    public boolean shadows = true;
+    public boolean worldAnimations = true;
+
     public Identifier mapLevel;
     public Vec3 mapSpawn;
     public Vec2 mapSpawnRotation;

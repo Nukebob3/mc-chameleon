@@ -21,6 +21,7 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.GameType;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
+import net.minecraft.world.scores.Team;
 import net.nukebob.chameleon.MCChameleon;
 import net.nukebob.chameleon.config.GameConfig;
 import net.nukebob.chameleon.dimension.ChameleonDimensions;
@@ -78,6 +79,8 @@ public class Game {
             player.getInventory().clearContent();
             ServerPlayNetworking.send(player, new Payloads.ClientBoundGameHudPlayersPayload(0,0));
         }
+
+        TeamControl.getChameleonsTeam().setNameTagVisibility(config.isInfection?Team.Visibility.NEVER: Team.Visibility.HIDE_FOR_OTHER_TEAMS);
     }
 
     public static void update(GameConfig config) {
@@ -155,8 +158,7 @@ public class Game {
                 for (ServerPlayer player : PlayerLookup.all(MCChameleon.SERVER)) {
                     player.getInventory().clearContent();
                     if (TeamControl.isHunter(player.getTeam())) {
-                        player.getInventory().setItem(0, new ItemStack(ChameleonItems.GUN));
-                        player.getInventory().setSelectedSlot(0);
+                        setSeeker(player);
                     }
                     if (!TeamControl.isChameleon(player.getTeam())) continue;
                     Skins.blank(player.getUUID());
@@ -170,9 +172,11 @@ public class Game {
                     player.connection.send(new ClientboundSetTitleTextPacket(Component.literal("Hide Start!")));
                     playLocalSound(player, ChameleonSounds.BELL_START);
 
-
                     mapTp(player);
                 }
+                TeamControl.getChameleonsTeam().setNameTagVisibility(config.isInfection?Team.Visibility.NEVER: Team.Visibility.HIDE_FOR_OTHER_TEAMS);
+                TeamControl.getChameleonsTeam().setAllowFriendlyFire(config.shadows);
+                TeamControl.getChameleonsTeam().setSeeFriendlyInvisibles(config.worldAnimations);
             }
             case HIDE -> {
                 state=GameState.SEEK;
@@ -222,6 +226,15 @@ public class Game {
 
     public static void playLocalSound(ServerPlayer player, SoundEvent soundEvent) {
         player.connection.send(new ClientboundSoundPacket(Holder.direct(soundEvent), SoundSource.MASTER, player.getX(), player.getY(), player.getZ(), 1, 1, 0));
+    }
+
+    public static void setSeeker(ServerPlayer player) {
+        player.getInventory().clearContent();
+        player.getInventory().setItem(0, new ItemStack(ChameleonItems.GUN));
+        player.getInventory().setSelectedSlot(0);
+        Skins.blank(player.getUUID());
+        TeamControl.applyHunterAttributes(player);
+        MCChameleon.SERVER.getScoreboard().addPlayerToTeam(player.getPlainTextName(), TeamControl.getHuntersTeam());
     }
 
     public static void mapTp(ServerPlayer player) {
