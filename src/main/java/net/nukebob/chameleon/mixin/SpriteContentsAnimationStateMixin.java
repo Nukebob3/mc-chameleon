@@ -11,6 +11,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 public class SpriteContentsAnimationStateMixin {
     @Inject(method = "tick", at = @At("HEAD"), cancellable = true)
     private void mc_chameleon$disableBlockAnimation(CallbackInfo ci) {
+        if (TeamControl.getChameleonsTeam()==null) return;
         if (!TeamControl.getChameleonsTeam().canSeeFriendlyInvisibles()) ci.cancel();
     }
 }
