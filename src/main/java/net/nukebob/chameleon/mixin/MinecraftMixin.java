@@ -13,6 +13,7 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.*;
+import net.minecraft.world.phys.shapes.VoxelShape;
 import net.nukebob.chameleon.MCChameleonClient;
 import net.nukebob.chameleon.gameplay.TeamControl;
 import net.nukebob.chameleon.item.ChameleonItems;
@@ -104,8 +105,20 @@ public abstract class MinecraftMixin {
                         || blockState.is(net.minecraft.world.level.block.Blocks.TALL_GRASS)
                         || blockState.is(net.minecraft.world.level.block.Blocks.FERN)
                         || blockState.is(net.minecraft.world.level.block.Blocks.LARGE_FERN);
+                VoxelShape shape = blockState.getCollisionShape(level, blockPos);
 
-                if (!isPassable && !blockState.getCollisionShape(level, blockPos).isEmpty()) {
+
+                if (!isPassable && !shape.isEmpty()) {
+                    Vec3 localPos = currentPos.subtract(blockPos.getX(), blockPos.getY(), blockPos.getZ());
+                    BlockHitResult hit = shape.clip(
+                            localPos.subtract(direction.scale(step)),
+                            localPos,
+                            blockPos
+                    );
+                    if (hit!=null&&HitResult.Type.BLOCK.equals(hit.getType())) {
+                        return new BlockHitResult(currentPos, Direction.UP, blockPos, false);
+                    }
+
                     return new BlockHitResult(currentPos, Direction.UP, blockPos, false);
                 }
             }

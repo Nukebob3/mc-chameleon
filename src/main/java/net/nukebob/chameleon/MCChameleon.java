@@ -126,7 +126,7 @@ public class MCChameleon implements ModInitializer {
 		});
 
 		ServerTickEvents.END_SERVER_TICK.register(server -> {
-			if (Game.running) Game.tick();
+			if (Game.running&&!server.tickRateManager().isFrozen()) Game.tick();
 		});
 
 		CommandRegistrationCallback.EVENT.register(((commandDispatcher, commandBuildContext, commandSelection) -> {

@@ -9,6 +9,7 @@
 	],
 	"contact": {
 		"homepage": "https://modrinth.com/project/mc-chameleon",
+		"issues": "https://github.com/Nukebob3/mc-chameleon/issues",
 		"sources": "https://github.com/Nukebob3/mc-chameleon"
 	},
 	"license": "CC0-1.0",
