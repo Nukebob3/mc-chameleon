@@ -13,6 +13,7 @@
     "EntityRenderDispatcherMixin",
     "FogRendererMixin",
     "GameRendererMixin",
+    "GraphicsPresetMixin",
     "HudMixin",
     "HumanoidModelMixin",
     "HumanoidRenderStateMixin",

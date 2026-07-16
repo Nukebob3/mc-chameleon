@@ -8,7 +8,6 @@ import net.minecraft.client.renderer.entity.LivingEntityRenderer;
 import net.minecraft.client.renderer.entity.state.AvatarRenderState;
 import net.minecraft.client.renderer.entity.state.LivingEntityRenderState;
 import net.minecraft.client.renderer.rendertype.RenderType;
-import net.minecraft.client.renderer.rendertype.RenderTypes;
 import net.minecraft.client.renderer.state.level.CameraRenderState;
 import net.minecraft.resources.Identifier;
 import net.minecraft.world.entity.LivingEntity;
@@ -60,7 +59,8 @@ public abstract class LivingEntityRendererMixin<T extends LivingEntity, S extend
                     avatarRenderState.showRightSleeve=false;
 
                     if (Minecraft.getInstance().level==null) return;
-                    if (!TeamControl.getChameleonsTeam(Minecraft.getInstance().level.getScoreboard()).isAllowFriendlyFire()) cir.setReturnValue(RenderTypes.eyes(texture));
+                    if (!TeamControl.getChameleonsTeam(Minecraft.getInstance().level.getScoreboard()).isAllowFriendlyFire())
+                        cir.setReturnValue(ChameleonRenderTypes.hiderEmissive(texture));
                     return;
                 }
 

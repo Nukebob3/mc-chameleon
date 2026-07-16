@@ -9,6 +9,7 @@ import java.util.function.BiFunction;
 
 public class ChameleonRenderTypes {
     private static final BiFunction<Identifier, Boolean, RenderType> ENTITY_GRAY;
+    private static final BiFunction<Identifier, Boolean, RenderType> HIDER_EMISSIVE;
     private static final BiFunction<Identifier, Boolean, RenderType> PLAYER_UV_TRACKER;
     private static final RenderType GUN_SHOT;
 
@@ -16,6 +17,10 @@ public class ChameleonRenderTypes {
         ENTITY_GRAY = Util.memoize((texture, affectsOutline) -> {
             RenderSetup state = RenderSetup.builder(ChameleonRenderPipelines.ENTITY_GRAY).withTexture("Sampler0", texture).useLightmap().useOverlay().affectsCrumbling().sortOnUpload().setOutline(affectsOutline ? RenderSetup.OutlineProperty.AFFECTS_OUTLINE : RenderSetup.OutlineProperty.NONE).createRenderSetup();
             return RenderType.create("entity_gray", state);
+        });
+        HIDER_EMISSIVE = Util.memoize((texture, affectsOutline) -> {
+            RenderSetup state = RenderSetup.builder(ChameleonRenderPipelines.HIDER_EMISSIVE).withTexture("Sampler0", texture).useOverlay().affectsCrumbling().sortOnUpload().setOutline(affectsOutline ? RenderSetup.OutlineProperty.AFFECTS_OUTLINE : RenderSetup.OutlineProperty.NONE).createRenderSetup();
+            return RenderType.create("hider_emissive", state);
         });
         PLAYER_UV_TRACKER = Util.memoize((texture, affectsOutline) -> {
             RenderSetup state = RenderSetup.builder(ChameleonRenderPipelines.PLAYER_UV_TRACKER).withTexture("Sampler0", texture)
@@ -27,7 +32,11 @@ public class ChameleonRenderTypes {
     }
 
     public static RenderType entityGray(final Identifier texture) {
-        return ENTITY_GRAY.apply(texture, false);
+        return ENTITY_GRAY.apply(texture, true);
+    }
+
+    public static RenderType hiderEmissive(final Identifier texture) {
+        return HIDER_EMISSIVE.apply(texture, true);
     }
 
     public static RenderType playerUvTracker(final Identifier texture) {

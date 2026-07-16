@@ -7,10 +7,12 @@ import net.minecraft.client.renderer.BindGroupLayouts;
 import net.minecraft.client.renderer.RenderPipelines;
 import net.nukebob.chameleon.MCChameleon;
 
+import static net.minecraft.client.renderer.RenderPipelines.ENTITY_EMISSIVE_SNIPPET;
 import static net.minecraft.client.renderer.RenderPipelines.ENTITY_SNIPPET;
 
 public class ChameleonRenderPipelines {
     public static final RenderPipeline ENTITY_GRAY;
+    public static final RenderPipeline HIDER_EMISSIVE;
     public static final RenderPipeline PLAYER_UV_TRACKER;
     public static final RenderPipeline GUN_SHOT;
 
@@ -24,6 +26,18 @@ public class ChameleonRenderPipelines {
                 .withBindGroupLayout(BindGroupLayouts.SAMPLER1)
                 .withColorTargetState(new ColorTargetState(BlendFunction.TRANSLUCENT))
                 .withCull(false).build());
+
+        HIDER_EMISSIVE = RenderPipelines.register(RenderPipeline.builder(ENTITY_EMISSIVE_SNIPPET)
+                .withLocation("pipeline/hider_emissive")
+                .withFragmentShader("core/entity")
+                .withVertexShader("core/entity")
+                .withShaderDefine("EMISSIVE")
+                .withShaderDefine("NO_OVERLAY")
+                .withShaderDefine("NO_CARDINAL_LIGHTING")
+                .withBindGroupLayout(BindGroupLayouts.SAMPLER1)
+                .withColorTargetState(new ColorTargetState(BlendFunction.TRANSLUCENT))
+                .withCull(false)
+                .build());
 
         PLAYER_UV_TRACKER = RenderPipelines.register(RenderPipeline.builder(ENTITY_SNIPPET)
                 .withLocation("pipeline/uv_picker_target")

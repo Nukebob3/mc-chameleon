@@ -44,10 +44,10 @@ public class SettingsLock {
     );
 
     public static void applyLockedSettings(Options options) {
+        options.cloudStatus().set(CloudStatus.OFF);
         options.entityShadows().set(false);
         options.gamma().set(1.0);
         options.particles().set(ParticleStatus.MINIMAL);
         options.setModelPart(PlayerModelPart.CAPE, false);
-        options.cloudStatus().set(CloudStatus.OFF);
     }
 }

@@ -232,7 +232,6 @@ public class Game {
         player.getInventory().clearContent();
         player.getInventory().setItem(0, new ItemStack(ChameleonItems.GUN));
         player.getInventory().setSelectedSlot(0);
-        Skins.blank(player.getUUID());
         TeamControl.applyHunterAttributes(player);
         MCChameleon.SERVER.getScoreboard().addPlayerToTeam(player.getPlainTextName(), TeamControl.getHuntersTeam());
     }

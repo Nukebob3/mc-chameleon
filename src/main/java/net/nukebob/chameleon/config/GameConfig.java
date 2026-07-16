@@ -27,7 +27,7 @@ public class GameConfig {
 
     public boolean isInfection = false;
     public boolean shadows = true;
-    public boolean worldAnimations = true;
+    public boolean worldAnimations = false;
 
     public Identifier mapLevel;
     public Vec3 mapSpawn;
