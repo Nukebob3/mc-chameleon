@@ -88,52 +88,53 @@ public final class ChameleonOrbitCamera extends AbstractClientPlayer {
         this.input.tick();
 
         if (this.isActive()) {
-            if (this.isInFreeCam()) {
-                float yawRad = (float) Math.toRadians(this.getYaw());
-                float pitchRad = (float) Math.toRadians(this.getPitch());
-
-                float cosPitch = Mth.cos(pitchRad);
-                float sinPitch = Mth.sin(pitchRad);
-                float cosYaw = Mth.cos(yawRad);
-                float sinYaw = Mth.sin(yawRad);
-
-                double fwdX = -sinYaw * cosPitch;
-                double fwdY = -sinPitch;
-                double fwdZ = cosYaw * cosPitch;
-
-                double strafeX = cosYaw;
-                double strafeZ = sinYaw;
-
-                double forwardInput = this.input.keyPresses.forward() ? 1 : 0;
-                double strafeInput = this.input.keyPresses.left() ? -1 : 0;
-                strafeInput += this.input.keyPresses.right() ? 1 : 0;
-                forwardInput += this.input.keyPresses.backward() ? -1 : 0;
-
-                double speed = 0.1;
-
-                double motionX = (fwdX * forwardInput - strafeX * strafeInput) * speed;
-                double motionY = (fwdY * forwardInput) * speed;
-                double motionZ = (fwdZ * forwardInput - strafeZ * strafeInput) * speed;
-
-                Minecraft client = Minecraft.getInstance();
-                if (client.options.keyJump.isDown()) {
-                    motionY += speed;
-                }
-                if (client.options.keyShift.isDown()) {
-                    motionY -= speed;
-                }
-
-                this.setDeltaMovement(motionX, motionY, motionZ);
-
-                this.setPos(this.getX() + motionX, this.getY() + motionY, this.getZ() + motionZ);
-                this.setOldPos();
-            } else {
-
+            if (!this.isInFreeCam()) {
                 this.setDeltaMovement(Vec3.ZERO);
             }
         } else {
             super.tick();
         }
+    }
+
+    public void move(float deltaTime) {
+        float yawRad = (float) Math.toRadians(this.getYaw());
+        float pitchRad = (float) Math.toRadians(this.getPitch());
+
+        float cosPitch = Mth.cos(pitchRad);
+        float sinPitch = Mth.sin(pitchRad);
+        float cosYaw = Mth.cos(yawRad);
+        float sinYaw = Mth.sin(yawRad);
+
+        double fwdX = -sinYaw * cosPitch;
+        double fwdY = -sinPitch;
+        double fwdZ = cosYaw * cosPitch;
+
+        double strafeX = cosYaw;
+        double strafeZ = sinYaw;
+
+        double forwardInput = this.input.keyPresses.forward() ? 1 : 0;
+        double strafeInput = this.input.keyPresses.left() ? -1 : 0;
+        strafeInput += this.input.keyPresses.right() ? 1 : 0;
+        forwardInput += this.input.keyPresses.backward() ? -1 : 0;
+
+        double speed = 0.2*deltaTime*(this.input.keyPresses.sprint()?2:1);
+
+        double motionX = (fwdX * forwardInput - strafeX * strafeInput) * speed;
+        double motionY = (fwdY * forwardInput) * speed;
+        double motionZ = (fwdZ * forwardInput - strafeZ * strafeInput) * speed;
+
+        Minecraft client = Minecraft.getInstance();
+        if (client.options.keyJump.isDown()) {
+            motionY += speed;
+        }
+        if (client.options.keyShift.isDown()) {
+            motionY -= speed;
+        }
+
+        this.setDeltaMovement(motionX, motionY, motionZ);
+
+        this.setPos(this.getX() + motionX, this.getY() + motionY, this.getZ() + motionZ);
+        this.setOldPos();
     }
 
     public Vec3 getNonFreeCamPosition() {

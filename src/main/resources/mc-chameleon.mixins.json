@@ -44,13 +44,17 @@
     "ClientLevelMixin",
     "EntityMixin",
     "FarmlandCropMixin",
+    "FenceBlockMixin",
     "InventoryMixin",
     "LivingEntityMixin",
     "PlayerMixin",
+    "RedStoneOreBlockMixin",
     "SculkSensorBlockMixin",
     "SculkShriekerBlockMixin",
     "TripWireBlockMixin",
     "TurtleEggBlockMixin",
-    "VibrationSystemMixin"
+    "VaultBlockEntityMixin",
+    "VibrationSystemMixin",
+    "WallBlockMixin"
   ]
 }

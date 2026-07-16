@@ -35,4 +35,12 @@ public abstract class LevelExtractorMixin {
             levelRenderState.entityRenderStates.add(state);
         }
     }
+
+    @Inject(method = "extract", at = @At("TAIL"))
+    private void mc_chameleon$freeCamMove(DeltaTracker deltaTracker, Camera camera, float deltaPartialTick, CallbackInfo ci) {
+        ChameleonOrbitCamera cam = ChameleonOrbitCamera.getInstance();
+        if (cam==null||!cam.isActive()||!cam.isInFreeCam()) return;
+
+        cam.move(deltaTracker.getGameTimeDeltaTicks());
+    }
 }

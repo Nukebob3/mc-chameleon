@@ -120,7 +120,7 @@ public class Game {
 
     public static void whistle(GameConfig config) {
         for (ServerPlayer player : PlayerLookup.all(MCChameleon.SERVER)) {
-            if (TeamControl.isChameleon(player.getTeam())) {
+            if (TeamControl.isChameleon(player.getTeam())&&!GameType.SPECTATOR.equals(player.gameMode())) {
                 player.level().playSound(null,
                         player.getX(), player.getY(), player.getZ(),
                         config.isWhistleSound ? ChameleonSounds.WHISTLE : ChameleonSounds.FART,
@@ -170,9 +170,10 @@ public class Game {
                     if (!TeamControl.isChameleon(player.getTeam())) continue;
                     player.connection.send(new ClientboundSetTitlesAnimationPacket(0, 60, 20));
                     player.connection.send(new ClientboundSetTitleTextPacket(Component.literal("Hide Start!")));
-                    playLocalSound(player, ChameleonSounds.BELL_START);
 
                     mapTp(player);
+
+                    playLocalSound(player, ChameleonSounds.BELL_START);
                 }
                 TeamControl.getChameleonsTeam().setNameTagVisibility(config.isInfection?Team.Visibility.NEVER: Team.Visibility.HIDE_FOR_OTHER_TEAMS);
                 TeamControl.getChameleonsTeam().setAllowFriendlyFire(config.shadows);
@@ -185,11 +186,11 @@ public class Game {
                 for (ServerPlayer player : PlayerLookup.all(MCChameleon.SERVER)) {
                     player.connection.send(new ClientboundSetTitlesAnimationPacket(0, 60, 20));
                     player.connection.send(new ClientboundSetTitleTextPacket(Component.literal("Search Start!")));
-                    playLocalSound(player, ChameleonSounds.BELL_START);
-
                     if (!TeamControl.isHunter(player.getTeam())) continue;
 
                     mapTp(player);
+
+                    playLocalSound(player, ChameleonSounds.BELL_START);
                 }
             }
             case SEEK -> {

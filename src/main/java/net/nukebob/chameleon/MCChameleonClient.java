@@ -114,6 +114,7 @@ public class MCChameleonClient implements ClientModInitializer {
                 if (ChameleonTexture.skins.containsKey(client.player.getUUID())&&TeamControl.isChameleonStrict(client.player.getTeam())) client.gui.setScreen(new PaintScreen());
             });
             wasWhistleDown = handleKeyEdge(Keybinds.whistle, wasWhistleDown, () -> {
+                if (GameType.SPECTATOR.equals(client.player.gameMode())) return;
                 if (TeamControl.isChameleon(client.player.getTeam())) ClientPlayNetworking.send(new Payloads.ServerBoundWhistle());
             });
 
@@ -138,6 +139,7 @@ public class MCChameleonClient implements ClientModInitializer {
                     ChameleonOrbitCamera cam = ChameleonOrbitCamera.getInstance();
                     cam.setActive(true);
                     cam.setInvisible(true);
+                    cam.spectateWho=client.player;
                     cam.syncToEntityLookDirection(client.getCameraEntity().getYRot(), client.getCameraEntity().getXRot());
                     if (client.level != null) client.level.addEntity(cam);
                     client.setCameraEntity(cam);

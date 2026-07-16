@@ -154,10 +154,15 @@ public class PaintScreen extends Screen {
         recombineColour(true);
 
         var camera = minecraft.getCameraEntity();
-        if (camera != null && !ChameleonOrbitCamera.getInstance().isActive()) {
+        ChameleonOrbitCamera cam = ChameleonOrbitCamera.getInstance();
+        if (cam==null) ChameleonOrbitCamera.recreate();
+        cam = ChameleonOrbitCamera.getInstance();
+        if (camera != null && !cam.isActive()) {
             ChameleonOrbitCamera.getInstance().syncToEntityLookDirection(camera.getYRot(), camera.getXRot());
             ChameleonOrbitCamera.getInstance().setDistance(2);
         }
+        cam.spectateWho = minecraft.player;
+        cam.setFreeCam(false);
         ChameleonOrbitCamera.getInstance().setActive(true);
     }
 
