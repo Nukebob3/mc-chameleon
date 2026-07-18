@@ -5,6 +5,7 @@ import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
 import net.minecraft.core.Holder;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.Style;
 import net.minecraft.network.protocol.game.ClientboundSetTitleTextPacket;
 import net.minecraft.network.protocol.game.ClientboundSetTitlesAnimationPacket;
 import net.minecraft.network.protocol.game.ClientboundSoundPacket;
@@ -29,6 +30,8 @@ import net.nukebob.chameleon.item.ChameleonItems;
 import net.nukebob.chameleon.networking.Payloads;
 import net.nukebob.chameleon.networking.Skins;
 import net.nukebob.chameleon.sound.ChameleonSounds;
+import net.nukebob.chameleon.voicechat.VoiceChat;
+import net.nukebob.chameleon.voicechat.VoiceChatAccess;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -81,6 +84,14 @@ public class Game {
         }
 
         TeamControl.getChameleonsTeam().setNameTagVisibility(config.isInfection?Team.Visibility.NEVER: Team.Visibility.HIDE_FOR_OTHER_TEAMS);
+    }
+
+    public static int getNumberOfHiders() {
+        int hiders = 0;
+        for (ServerPlayer player : PlayerLookup.all(MCChameleon.SERVER)) {
+            if (!player.isSpectator()&&TeamControl.isChameleon(player.getTeam())) hiders++;
+        }
+        return hiders;
     }
 
     public static void update(GameConfig config) {
@@ -143,6 +154,8 @@ public class Game {
             player.getInventory().clearContent();
             ServerPlayNetworking.send(player, new Payloads.ClientBoundGameHudUpdatePayload(0, 0, 0, ""));
             ServerPlayNetworking.send(player, new Payloads.ClientBoundGameHudPlayersPayload(0,0));
+
+            VoiceChatAccess.addPlayerToGroup(player);
         }
     }
 
@@ -167,6 +180,7 @@ public class Game {
                 TeamControl.nameTagVisibility(true);
                 //hider tp
                 for (ServerPlayer player : PlayerLookup.all(MCChameleon.SERVER)) {
+                    player.sendSystemMessage(Component.literal("The Gamemode is").withStyle(Style.EMPTY.withUnderlined(true)).withColor(0xFFFFFFFF).append(Component.literal(config.isInfection?" INFECTION":" BASIC").withStyle(Style.EMPTY.withUnderlined(false)).withColor(0xFF00ff44)));
                     if (!TeamControl.isChameleon(player.getTeam())) continue;
                     player.connection.send(new ClientboundSetTitlesAnimationPacket(0, 60, 20));
                     player.connection.send(new ClientboundSetTitleTextPacket(Component.literal("Hide Start!")));

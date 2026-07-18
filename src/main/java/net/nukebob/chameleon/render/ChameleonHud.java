@@ -18,6 +18,7 @@ import net.nukebob.chameleon.font.ChameleonFonts;
 import net.nukebob.chameleon.gameplay.TeamControl;
 import net.nukebob.chameleon.keybind.Keybinds;
 import net.nukebob.chameleon.screen.PaintScreen;
+import net.nukebob.chameleon.voicechat.VoiceChatAccess;
 import org.lwjgl.glfw.GLFW;
 
 public class ChameleonHud {
@@ -166,6 +167,8 @@ public class ChameleonHud {
             renderKey(graphics, options.keyChat, graphics.guiWidth()-20, graphics.guiHeight()/2-77, 12, options.keyChat.isDown()?0xFFAAAAAA:0xFFFFFFFF,0xFF000000);
             graphics.blitSprite(RenderPipelines.GUI_TEXTURED, MCChameleon.id("actions/chat"), graphics.guiWidth()-20-15, graphics.guiHeight()/2-77+1, 11,11);
         }
+
+        VoiceChatAccess.renderGui(graphics, deltaTracker);
     }
 
     public static void paintScreenControls(GuiGraphicsExtractor graphics, Options options, boolean space, boolean alt, boolean left, boolean right, boolean middle) {
@@ -217,7 +220,7 @@ public class ChameleonHud {
         renderLabel(graphics, "Zoom", 5+2+12+19+19, graphics.guiHeight()/2+65+35, 38, 30, 0.5f, false);
     }
 
-    private static void renderKey(GuiGraphicsExtractor graphics, KeyMapping key, int x, int y, int width, int colour, int textColour) {
+    public static void renderKey(GuiGraphicsExtractor graphics, KeyMapping key, int x, int y, int width, int colour, int textColour) {
         if (KeyMappingHelper.getBoundKeyOf(key).getType().equals(InputConstants.Type.MOUSE)) {
             Identifier texture = switch (KeyMappingHelper.getBoundKeyOf(key).getValue()) {
                 case GLFW.GLFW_MOUSE_BUTTON_LEFT -> MCChameleon.id("mouse/left");

@@ -11,6 +11,7 @@ import net.minecraft.world.entity.HumanoidArm;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.*;
 import net.minecraft.world.phys.shapes.VoxelShape;
@@ -48,7 +49,7 @@ public abstract class MinecraftMixin {
 
     @Inject(method = "startAttack", at = @At("HEAD"), cancellable = true)
     private void mc_chameleon$cancelAttack(CallbackInfoReturnable<Boolean> cir) {
-        if (player!=null&&player.isCreative()) return;
+        if (player!=null&&(player.isCreative()||player.isSpectator())) return;
         cir.setReturnValue(true);
         if (player!=null&&player.getMainHandItem().is(ChameleonItems.GUN)&&!player.getCooldowns().isOnCooldown(player.getMainHandItem())) {
             float partialTicks = deltaTracker.getGameTimeDeltaPartialTick(false);
@@ -101,25 +102,21 @@ public abstract class MinecraftMixin {
             BlockState blockState = level.getBlockState(blockPos);
 
             if (!blockState.isAir()) {
-                boolean isPassable = blockState.is(net.minecraft.world.level.block.Blocks.SHORT_GRASS)
-                        || blockState.is(net.minecraft.world.level.block.Blocks.TALL_GRASS)
-                        || blockState.is(net.minecraft.world.level.block.Blocks.FERN)
-                        || blockState.is(net.minecraft.world.level.block.Blocks.LARGE_FERN);
-                VoxelShape shape = blockState.getCollisionShape(level, blockPos);
+                boolean isPassable = blockState.is(Blocks.SHORT_GRASS)
+                        || blockState.is(Blocks.TALL_GRASS)
+                        || blockState.is(Blocks.FERN)
+                        || blockState.is(Blocks.LARGE_FERN)
+                        || blockState.is(Blocks.BARRIER);
 
-
-                if (!isPassable && !shape.isEmpty()) {
-                    Vec3 localPos = currentPos.subtract(blockPos.getX(), blockPos.getY(), blockPos.getZ());
-                    BlockHitResult hit = shape.clip(
-                            localPos.subtract(direction.scale(step)),
-                            localPos,
-                            blockPos
-                    );
-                    if (hit!=null&&HitResult.Type.BLOCK.equals(hit.getType())) {
-                        return new BlockHitResult(currentPos, Direction.UP, blockPos, false);
+                if (!isPassable) {
+                    VoxelShape shape = blockState.getCollisionShape(level, blockPos);
+                    if (!shape.isEmpty()) {
+                        Vec3 prevPos = currentPos.subtract(direction.scale(step));
+                        BlockHitResult hit = shape.clip(prevPos, currentPos, blockPos);
+                        if (hit != null) {
+                            return hit;
+                        }
                     }
-
-                    return new BlockHitResult(currentPos, Direction.UP, blockPos, false);
                 }
             }
 

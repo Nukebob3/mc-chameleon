@@ -21,6 +21,9 @@
 		],
 		"client": [
 			"net.nukebob.chameleon.MCChameleonClient"
+		],
+		"voicechat": [
+			"net.nukebob.chameleon.voicechat.VoiceChat"
 		]
 	},
 	"mixins": [
@@ -33,6 +36,7 @@
 		"fabric-api": "*"
 	},
 	"suggests": {
-		"modmenu": "*"
+		"modmenu": "*",
+		"voicechat_api": "*"
 	}
 }

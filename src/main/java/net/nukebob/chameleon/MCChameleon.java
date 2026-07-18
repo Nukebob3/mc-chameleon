@@ -1,5 +1,6 @@
 package net.nukebob.chameleon;
 
+import de.maxhenkel.voicechat.api.VoicechatConnection;
 import net.fabricmc.api.ModInitializer;
 import net.fabricmc.fabric.api.command.v2.CommandRegistrationCallback;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerLifecycleEvents;
@@ -27,6 +28,8 @@ import net.nukebob.chameleon.networking.Networking;
 import net.nukebob.chameleon.networking.Payloads;
 import net.nukebob.chameleon.networking.Skins;
 import net.nukebob.chameleon.sound.ChameleonSounds;
+import net.nukebob.chameleon.voicechat.VoiceChat;
+import net.nukebob.chameleon.voicechat.VoiceChatAccess;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -150,6 +153,7 @@ public class MCChameleon implements ModInitializer {
 			listener.player.setGameMode(Game.running?GameType.SPECTATOR:GameType.ADVENTURE);
 			server.getScoreboard().removePlayerFromTeam(listener.player.getPlainTextName());
 
+			VoiceChatAccess.addPlayerToGroup(listener.player);
 		});
 		ServerPlayConnectionEvents.DISCONNECT.register((listener, server) -> {
 			POSES.remove(listener.player.getUUID());
