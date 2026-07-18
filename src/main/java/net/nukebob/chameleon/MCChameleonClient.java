@@ -6,12 +6,10 @@ import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayConnectionEvents;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
 import net.fabricmc.fabric.api.client.rendering.v1.level.LevelRenderEvents;
-import net.minecraft.client.KeyMapping;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.components.debug.DebugScreenEntries;
 import net.minecraft.client.gui.components.debug.DebugScreenEntryStatus;
 import net.minecraft.resources.Identifier;
-import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.GameType;
@@ -20,7 +18,6 @@ import net.minecraft.world.scores.Team;
 import net.nukebob.chameleon.camera.ChameleonOrbitCamera;
 import net.nukebob.chameleon.gameplay.IdleTracker;
 import net.nukebob.chameleon.gameplay.PoseTracker;
-import net.nukebob.chameleon.gameplay.Poses;
 import net.nukebob.chameleon.gameplay.TeamControl;
 import net.nukebob.chameleon.keybind.Keybinds;
 import net.nukebob.chameleon.networking.Networking;
@@ -42,14 +39,6 @@ public class MCChameleonClient implements ClientModInitializer {
     public static int selectedColour=0xFFFFFFFF;
     public static float brushSize=1;
 
-    public static boolean wasOpenPaintScreenDown = false;
-    private static boolean wasWhistleDown = false;
-    private static boolean wasCameraLockDown = false;
-    private static boolean wasFreeCamDown = false;
-    private static boolean wasToggleNamePlateDown = false;
-
-    private static boolean wasSwapSpectateTargetLeft = false;
-    private static boolean wasSwapSpectateTargetRight = false;
 
     public static boolean wasSprinting = false;
     public static boolean wasJumping = false;
@@ -71,7 +60,6 @@ public class MCChameleonClient implements ClientModInitializer {
             for (Identifier entryId : DebugScreenEntries.allEntries().keySet()) {
                 client.debugEntries.setStatus(entryId, DebugScreenEntryStatus.NEVER);
             }
-            //client.debugEntries.setStatus(DebugScreenEntries.ENTITY_HITBOXES, DebugScreenEntryStatus.ALWAYS_ON);
         });
 
         ClientPlayConnectionEvents.JOIN.register((listener, sender, client) -> {
@@ -98,8 +86,6 @@ public class MCChameleonClient implements ClientModInitializer {
             double newDist = cameraDist + (target - cameraDist) * 0.1;
             if (cameraDist!=4.0) Minecraft.getInstance().player.getAttributes().getInstance(Attributes.CAMERA_DISTANCE).setBaseValue(newDist);
 
-            float partialTicks = Minecraft.getInstance().getDeltaTracker().getGameTimeDeltaPartialTick(false);
-
             shots.forEach(shot -> {
                 shot.render(ctx.poseStack(), ctx.submitNodeCollector(), ctx.levelState().cameraRenderState);
                 shot.age(Minecraft.getInstance().getDeltaTracker().getGameTimeDeltaTicks());
@@ -109,14 +95,6 @@ public class MCChameleonClient implements ClientModInitializer {
 
         ClientTickEvents.END_CLIENT_TICK.register(client -> {
             if (client.player==null) return;
-
-            wasOpenPaintScreenDown = handleKeyEdge(Keybinds.openPaintScreen, wasOpenPaintScreenDown, () -> {
-                if (ChameleonTexture.skins.containsKey(client.player.getUUID())&&TeamControl.isChameleonStrict(client.player.getTeam())) client.gui.setScreen(new PaintScreen());
-            });
-            wasWhistleDown = handleKeyEdge(Keybinds.whistle, wasWhistleDown, () -> {
-                if (GameType.SPECTATOR.equals(client.player.gameMode())) return;
-                if (TeamControl.isChameleon(client.player.getTeam())) ClientPlayNetworking.send(new Payloads.ServerBoundWhistle());
-            });
 
             ChameleonOrbitCamera camera = ChameleonOrbitCamera.getInstance();
             if (camera==null) return;
@@ -128,49 +106,7 @@ public class MCChameleonClient implements ClientModInitializer {
             }
             if (client.gui.screen() instanceof PaintScreen && (client.player.isSpectator()||!TeamControl.isChameleon(client.player.getTeam()))) client.gui.setScreen(null);
 
-            wasCameraLockDown = handleKeyEdge(Keybinds.cameraLock, wasCameraLockDown, () -> {
-                if (!TeamControl.isChameleon(client.player.getTeam())&&!ChameleonOrbitCamera.getInstance().isActive()) return;
-                if (GameType.SPECTATOR.equals(client.player.gameMode())) return;
-                if (TeamControl.isLocked(client.player.getTeam())) return;
-
-                if (client.getCameraEntity() == null) return;
-                if (!camera.isActive()) {
-                    ChameleonOrbitCamera.recreate();
-                    ChameleonOrbitCamera cam = ChameleonOrbitCamera.getInstance();
-                    cam.setActive(true);
-                    cam.setInvisible(true);
-                    cam.spectateWho=client.player;
-                    cam.syncToEntityLookDirection(client.getCameraEntity().getYRot(), client.getCameraEntity().getXRot());
-                    if (client.level != null) client.level.addEntity(cam);
-                    client.setCameraEntity(cam);
-                } else {
-                    camera.setActive(false);
-                    client.player.getAttributes().getInstance(Attributes.CAMERA_DISTANCE).setBaseValue(camera.getDistance()*2);
-                    camera.setId(-333);
-                    if (client.level != null) client.level.removeEntity(camera.getId(), Entity.RemovalReason.DISCARDED);
-                    client.setCameraEntity(client.player);
-                }
-            });
-
-            wasFreeCamDown = handleKeyEdge(Keybinds.freeCam, wasFreeCamDown, () -> {
-                if (camera.isActive()) {
-                    camera.setFreeCam(!camera.isInFreeCam());
-                    camera.setPos(camera.getNonFreeCamPosition());
-                }
-            });
-
-            wasToggleNamePlateDown = handleKeyEdge(Keybinds.toggleNameplate, wasToggleNamePlateDown, () -> {
-                namePlatesDisplay = !namePlatesDisplay;
-            });
-
-            wasSwapSpectateTargetLeft = handleKeyEdge(client.options.keyAttack, wasSwapSpectateTargetLeft, () -> {
-                if (client.level==null) return;
-                camera.setSpectatorTarget(getSpectateTarget(client.level, client.player, camera.spectateWho, true));
-            });
-            wasSwapSpectateTargetRight = handleKeyEdge(client.options.keyUse, wasSwapSpectateTargetRight, () -> {
-                if (client.level==null) return;
-                camera.setSpectatorTarget(getSpectateTarget(client.level, client.player, camera.spectateWho, false));
-            });
+            Keybinds.register(client);
 
             if ((camera.spectateWho!=null&&GameType.SPECTATOR.equals(camera.spectateWho.gameMode())) && client.level!=null) {
                 camera.setSpectatorTarget(getSpectateTarget(client.level, client.player, camera.spectateWho, false));
@@ -178,23 +114,6 @@ public class MCChameleonClient implements ClientModInitializer {
 
             UUID uuid = client.player.getUUID();
             PoseTracker poseTracker = POSES.computeIfAbsent(uuid, k -> new PoseTracker());
-            if (Keybinds.openPoseScreen.consumeClick()) {
-                if (!TeamControl.isChameleonStrict(client.player.getTeam())) return;
-                if (client.player.isSpectator()) return;
-
-                Poses currentPose = poseTracker.getTargetPos();
-
-                Poses nextPose = (currentPose == null) ? Poses.T_POSE : switch (currentPose) {
-                    case T_POSE -> Poses.ARCH;
-                    case ARCH -> Poses.FLAT;
-                    case FLAT -> null;
-                };
-
-                poseTracker.setTargetPose(nextPose);
-                ClientPlayNetworking.send(new Payloads.ServerBoundPosePayload(nextPose));
-                client.player.refreshDimensions();
-                if (nextPose==null) climbing = false;
-            }
             if (client.player.isSprinting()&&!camera.isInFreeCam()) {
                 if (client.player.isSpectator()||!TeamControl.isChameleonStrict(client.player.getTeam())) return;
                 poseTracker.setTargetPose(null);
@@ -219,19 +138,10 @@ public class MCChameleonClient implements ClientModInitializer {
         });
     }
 
-    private static boolean handleKeyEdge(KeyMapping key, boolean wasDown, Runnable onPress) {
-        if (key.isDown()) {
-            if (!wasDown) onPress.run();
-            return true;
-        }
-        return false;
-    }
-
-    private static Player getSpectateTarget(Level level, Player local, Player target, boolean left) {
+    public static Player getSpectateTarget(Level level, Player local, Player target, boolean left) {
         if (level==null || level.players().isEmpty()) return null;
 
         List<Player> players = new ArrayList<>(level.players());
-        //players.removeIf(player -> (!TeamControl.isHunter(player.getTeam())&&!TeamControl.isChameleon(player.getTeam()))||!GameType.ADVENTURE.equals(player.gameMode()));
 
         players.removeIf(player -> {
             boolean isPlayer = TeamControl.isChameleon(player.getTeam())||TeamControl.isHunter(player.getTeam());

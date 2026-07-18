@@ -144,7 +144,7 @@ public class MCChameleon implements ModInitializer {
 			}));
 			AttributeControl.setCommonAttributes(listener.player);
 			TeamControl.applyLobbyAttributes(listener.player);
-			boolean shouldBecomeSpectator = Game.running&&Game.state!=GameState.PREGAME;
+			boolean shouldBecomeSpectator = Game.running&&Game.getState()!=GameState.PREGAME;
 			listener.player.setGameMode(shouldBecomeSpectator?GameType.SPECTATOR:GameType.ADVENTURE);
 			server.getScoreboard().removePlayerFromTeam(listener.player.getPlainTextName());
 

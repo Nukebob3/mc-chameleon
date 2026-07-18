@@ -1,10 +1,10 @@
 package net.nukebob.chameleon.voicechat;
 
 import de.maxhenkel.voicechat.api.*;
-import de.maxhenkel.voicechat.api.events.ClientVoicechatConnectionEvent;
 import de.maxhenkel.voicechat.api.events.ClientVoicechatInitializationEvent;
 import de.maxhenkel.voicechat.api.events.EventRegistration;
 import de.maxhenkel.voicechat.api.events.VoicechatServerStartedEvent;
+import de.maxhenkel.voicechat.voice.client.ClientManager;
 import de.maxhenkel.voicechat.voice.client.KeyEvents;
 import net.minecraft.client.KeyMapping;
 import net.minecraft.server.level.ServerPlayer;
@@ -79,6 +79,13 @@ public class VoiceChat implements VoicechatPlugin {
 
     protected static boolean isGuiHidden() {
         return CLIENT_API.getClientConfig().getBoolean("hide_icons", true);
+    }
+
+    protected static void mute() {
+        ClientManager.getPlayerStateManager().setMuted(!CLIENT_API.isMuted());
+    }
+    protected static void deafen() {
+        ClientManager.getPlayerStateManager().setDisabled(!CLIENT_API.isDisabled());
     }
 
     @Override

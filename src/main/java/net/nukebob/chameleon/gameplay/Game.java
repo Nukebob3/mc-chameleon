@@ -30,7 +30,6 @@ import net.nukebob.chameleon.item.ChameleonItems;
 import net.nukebob.chameleon.networking.Payloads;
 import net.nukebob.chameleon.networking.Skins;
 import net.nukebob.chameleon.sound.ChameleonSounds;
-import net.nukebob.chameleon.voicechat.VoiceChat;
 import net.nukebob.chameleon.voicechat.VoiceChatAccess;
 
 import java.util.ArrayList;
@@ -42,7 +41,7 @@ public class Game {
 
     public static boolean running = false;
     public static int whistleTime;
-    public static GameState state;
+    private static GameState state;
     public static int time;
     private static Timer timer;
 
@@ -180,14 +179,13 @@ public class Game {
                 TeamControl.nameTagVisibility(true);
                 //hider tp
                 for (ServerPlayer player : PlayerLookup.all(MCChameleon.SERVER)) {
+                    playLocalSound(player, ChameleonSounds.BELL_START);
                     player.sendSystemMessage(Component.literal("The Gamemode is").withStyle(Style.EMPTY.withUnderlined(true)).withColor(0xFFFFFFFF).append(Component.literal(config.isInfection?" INFECTION":" BASIC").withStyle(Style.EMPTY.withUnderlined(false)).withColor(0xFF00ff44)));
                     if (!TeamControl.isChameleon(player.getTeam())) continue;
                     player.connection.send(new ClientboundSetTitlesAnimationPacket(0, 60, 20));
                     player.connection.send(new ClientboundSetTitleTextPacket(Component.literal("Hide Start!")));
 
                     mapTp(player);
-
-                    playLocalSound(player, ChameleonSounds.BELL_START);
                 }
                 TeamControl.getChameleonsTeam().setNameTagVisibility(config.isInfection?Team.Visibility.NEVER: Team.Visibility.HIDE_FOR_OTHER_TEAMS);
                 TeamControl.getChameleonsTeam().setAllowFriendlyFire(config.shadows);
@@ -198,13 +196,12 @@ public class Game {
                 timer.setTime(config.seekTime);
                 //seeker tp
                 for (ServerPlayer player : PlayerLookup.all(MCChameleon.SERVER)) {
+                    playLocalSound(player, ChameleonSounds.BELL_START);
                     player.connection.send(new ClientboundSetTitlesAnimationPacket(0, 60, 20));
                     player.connection.send(new ClientboundSetTitleTextPacket(Component.literal("Search Start!")));
                     if (!TeamControl.isHunter(player.getTeam())) continue;
 
                     mapTp(player);
-
-                    playLocalSound(player, ChameleonSounds.BELL_START);
                 }
             }
             case SEEK -> {
@@ -329,5 +326,9 @@ public class Game {
     public static void tick() {
         if (timer!=null)
             timer.tick();
+    }
+
+    public static GameState getState() {
+        return state == null ?GameState.PREGAME:state;
     }
 }

@@ -1,5 +1,6 @@
 package net.nukebob.chameleon.screen;
 
+import net.fabricmc.fabric.api.client.keymapping.v1.KeyMappingHelper;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
@@ -16,6 +17,7 @@ import net.nukebob.chameleon.camera.ChameleonOrbitCamera;
 import net.nukebob.chameleon.gameplay.PoseTracker;
 import net.nukebob.chameleon.gameplay.Poses;
 import net.nukebob.chameleon.gameplay.TeamControl;
+import net.nukebob.chameleon.keybind.Keybinds;
 import net.nukebob.chameleon.networking.Payloads;
 import net.nukebob.chameleon.render.ChameleonHud;
 import net.nukebob.chameleon.texture.BrushGeometry;
@@ -24,6 +26,7 @@ import net.nukebob.chameleon.texture.ColourLocation;
 import net.nukebob.chameleon.texture.Pixel;
 import net.nukebob.chameleon.util.ColourUtil;
 import net.nukebob.chameleon.util.UvPicker;
+import net.nukebob.chameleon.voicechat.VoiceChatAccess;
 import org.jspecify.annotations.NonNull;
 import org.lwjgl.glfw.GLFW;
 
@@ -271,6 +274,12 @@ public class PaintScreen extends Screen {
     }
 
     @Override
+    public void tick() {
+        super.tick();
+        Keybinds.register(minecraft);
+    }
+
+    @Override
     public boolean keyPressed(KeyEvent event) {
         if (event.input() == GLFW.GLFW_KEY_SPACE) {
             spaceDown = true;
@@ -280,6 +289,16 @@ public class PaintScreen extends Screen {
             altDown = true;
         }
         if (event.input() == GLFW.GLFW_KEY_F) onClose();
+
+        if (event.input() == KeyMappingHelper.getBoundKeyOf(Keybinds.whistle).getValue()) {
+            Keybinds.whistle(minecraft);
+        } else if (event.input() == KeyMappingHelper.getBoundKeyOf(Keybinds.toggleNameplate).getValue()) {
+            Keybinds.toggleNameplate();
+        } else if (event.input() == KeyMappingHelper.getBoundKeyOf(Keybinds.openPoseScreen).getValue()) {
+            Keybinds.pose(minecraft);
+        } else {
+            VoiceChatAccess.paintScreenVoiceChatKeybinds(event.key());
+        }
 
         return super.keyPressed(event);
     }
@@ -454,7 +473,7 @@ public class PaintScreen extends Screen {
     @Override
     public void onClose() {
         super.onClose();
-        MCChameleonClient.wasOpenPaintScreenDown = true;
+        Keybinds.wasOpenPaintScreenDown = true;
         ClientPlayNetworking.send(new Payloads.ServerBoundUpdatePixelsPayload(MCChameleonClient.localSkinCache));
     }
 }

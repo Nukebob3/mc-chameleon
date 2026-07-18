@@ -26,7 +26,7 @@ public class GameConfig {
     public float hunterPercent = 0.2f;
 
     public boolean isInfection = false;
-    public boolean shadows = true;
+    public boolean shadows = false;
     public boolean worldAnimations = false;
 
     public Identifier mapLevel = MCChameleon.id("maps");

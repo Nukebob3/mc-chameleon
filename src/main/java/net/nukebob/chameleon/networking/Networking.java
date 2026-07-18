@@ -112,7 +112,7 @@ public class Networking {
         });
         ServerPlayNetworking.registerGlobalReceiver(Payloads.ServerBoundWhistle.TYPE, (payload, context) -> {
             context.server().execute(() -> {
-                if (!(Game.state.equals(GameState.SEEK)||Game.state.equals(GameState.HIDE))) return;
+                if (!(Game.getState().equals(GameState.SEEK)||Game.getState().equals(GameState.HIDE))) return;
 
                 var player = context.player();
 
@@ -133,7 +133,7 @@ public class Networking {
                         ServerPlayNetworking.send(player, new Payloads.ClientBoundShotPayload(context.player().position().add(context.player().getEyePosition()).scale(0.5), payload.target()));
                     }
 
-                    if (hitPlayer&&Game.state.equals(GameState.SEEK))
+                    if (hitPlayer&&Game.getState().equals(GameState.SEEK))
                         if (payload.hit().equals(player.getUUID())&& TeamControl.isChameleon(player.getTeam())) {
                             PlayerLookup.all(context.server()).forEach(p -> p.sendOverlayMessage(Component.literal(context.player().getPlainTextName()).withColor(0xFFebae34).append(Component.literal(" found ").withColor(0xFFFFFFFF)).append(Component.literal(player.getPlainTextName()).withColor(0xFF27dbd8))));
 

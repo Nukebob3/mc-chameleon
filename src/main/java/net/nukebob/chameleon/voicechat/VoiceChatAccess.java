@@ -1,5 +1,6 @@
 package net.nukebob.chameleon.voicechat;
 
+import net.fabricmc.fabric.api.client.keymapping.v1.KeyMappingHelper;
 import net.minecraft.client.DeltaTracker;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.renderer.RenderPipelines;
@@ -26,6 +27,22 @@ public class VoiceChatAccess {
                 ChameleonHud.renderKey(graphics, VoiceChat.deafenKey(), graphics.guiWidth() - 30 + 2, graphics.guiHeight() / 2 + 64 + 2 + 30+20, 10, VoiceChat.deafenKey().isDown() ? 0xFFAAAAAA : 0xFFFFFFFF, 0xFF000000);
                 graphics.blitSprite(RenderPipelines.GUI_TEXTURED, MCChameleon.id(VoiceChat.isDeafened()?"vc/headphones_off":"vc/headphones"), graphics.guiWidth() - 30 + 2+11, graphics.guiHeight() / 2 + 64 + 2 + 30+20, 9, 9);
             }
+        }
+    }
+
+    public static void mute() {
+        VoiceChat.mute();
+    }
+
+    public static void deafen() {
+        VoiceChat.deafen();
+    }
+
+    public static void paintScreenVoiceChatKeybinds(int key) {
+        if (key == KeyMappingHelper.getBoundKeyOf(VoiceChat.muteKey()).getValue()) {
+            mute();
+        } else if (key == KeyMappingHelper.getBoundKeyOf(VoiceChat.deafenKey()).getValue()) {
+            deafen();
         }
     }
 }
