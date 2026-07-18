@@ -26,5 +26,6 @@ public class GameRuleControl {
         server.getGameRules().set(GameRules.ADVANCE_TIME, false, server);
         server.getGameRules().set(GameRules.ADVANCE_WEATHER, false, server);
         server.getGameRules().set(GameRules.RANDOM_TICK_SPEED, 0, server);
+        server.getGameRules().set(GameRules.KEEP_INVENTORY, true, server);
     }
 }

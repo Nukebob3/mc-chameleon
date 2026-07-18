@@ -29,9 +29,9 @@ public class GameConfig {
     public boolean shadows = true;
     public boolean worldAnimations = false;
 
-    public Identifier mapLevel;
-    public Vec3 mapSpawn;
-    public Vec2 mapSpawnRotation;
+    public Identifier mapLevel = MCChameleon.id("maps");
+    public Vec3 mapSpawn = new Vec3(37.5, 102.9375, 48.5);
+    public Vec2 mapSpawnRotation = new Vec2(0,0);
 
     public static synchronized GameConfig loadConfig() {
         if (config!=null) return config;

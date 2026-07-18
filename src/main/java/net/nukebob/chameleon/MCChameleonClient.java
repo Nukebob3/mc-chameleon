@@ -195,7 +195,7 @@ public class MCChameleonClient implements ClientModInitializer {
                 client.player.refreshDimensions();
                 if (nextPose==null) climbing = false;
             }
-            if (client.player.isSprinting()) {
+            if (client.player.isSprinting()&&!camera.isInFreeCam()) {
                 if (client.player.isSpectator()||!TeamControl.isChameleonStrict(client.player.getTeam())) return;
                 poseTracker.setTargetPose(null);
                 ClientPlayNetworking.send(new Payloads.ServerBoundPosePayload(null));

@@ -6,6 +6,7 @@ import net.fabricmc.fabric.api.networking.v1.PlayerLookup;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.network.chat.Component;
+import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.entity.player.Player;
@@ -25,6 +26,7 @@ import net.nukebob.chameleon.render.GunBeamRenderer;
 import net.nukebob.chameleon.sound.ChameleonSounds;
 import net.nukebob.chameleon.texture.ChameleonTexture;
 import net.nukebob.chameleon.texture.ColourLocation;
+import net.nukebob.chameleon.voicechat.VoiceChatAccess;
 
 import java.util.List;
 import java.util.UUID;
@@ -135,11 +137,17 @@ public class Networking {
                         if (payload.hit().equals(player.getUUID())&& TeamControl.isChameleon(player.getTeam())) {
                             PlayerLookup.all(context.server()).forEach(p -> p.sendOverlayMessage(Component.literal(context.player().getPlainTextName()).withColor(0xFFebae34).append(Component.literal(" found ").withColor(0xFFFFFFFF)).append(Component.literal(player.getPlainTextName()).withColor(0xFF27dbd8))));
 
+                            ServerPlayNetworking.send(player, new Payloads.ClientBoundPosePayload(payload.hit(), -1));
+
                             if (GameConfig.loadConfig().isInfection) {
-                                Game.setSeeker(player);
-                                Game.mapTp(player);
+                                if (Game.getNumberOfHiders()>1) {
+                                    Game.setSeeker(player);
+                                    Game.mapTp(player);
+                                } else {
+                                    becomeSpectator(player);
+                                }
                             } else {
-                                player.setGameMode(GameType.SPECTATOR);
+                                becomeSpectator(player);
                             }
                             Game.updatePlayerCount();
                         }
@@ -147,6 +155,12 @@ public class Networking {
                 spawnFirework(context.player(), hitPlayer, payload.target());
             });
         });
+    }
+
+    private static void becomeSpectator(ServerPlayer player) {
+        player.setGameMode(GameType.SPECTATOR);
+
+        VoiceChatAccess.addPlayerToGroup(player);
     }
 
     private static void spawnFirework(Player player, boolean hitPlayer, Vec3 pos) {
