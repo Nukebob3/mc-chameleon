@@ -1,6 +1,5 @@
 package net.nukebob.chameleon;
 
-import de.maxhenkel.voicechat.api.VoicechatConnection;
 import net.fabricmc.api.ModInitializer;
 import net.fabricmc.fabric.api.command.v2.CommandRegistrationCallback;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerLifecycleEvents;
@@ -28,7 +27,6 @@ import net.nukebob.chameleon.networking.Networking;
 import net.nukebob.chameleon.networking.Payloads;
 import net.nukebob.chameleon.networking.Skins;
 import net.nukebob.chameleon.sound.ChameleonSounds;
-import net.nukebob.chameleon.voicechat.VoiceChat;
 import net.nukebob.chameleon.voicechat.VoiceChatAccess;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -124,9 +122,7 @@ public class MCChameleon implements ModInitializer {
 			}
 		});
 
-		ServerLifecycleEvents.SERVER_STOPPED.register(server -> {
-			GameConfig.saveConfig();
-		});
+		ServerLifecycleEvents.SERVER_STOPPED.register(server -> GameConfig.saveConfig());
 
 		ServerTickEvents.END_SERVER_TICK.register(server -> {
 			if (Game.running&&!server.tickRateManager().isFrozen()) Game.tick();
@@ -141,19 +137,19 @@ public class MCChameleon implements ModInitializer {
 		}));
 
 		ServerPlayConnectionEvents.JOIN.register((listener, sender, server) -> {
-			Skins.skinMap.forEach((uuid, skin) -> {
-				ServerPlayNetworking.send(listener.player, new Payloads.ClientBoundUpdatePixelsPayload(uuid, skin));
-			});
+			Skins.skinMap.forEach((uuid, skin) -> ServerPlayNetworking.send(listener.player, new Payloads.ClientBoundUpdatePixelsPayload(uuid, skin)));
 			POSES.forEach(((uuid, tracker) -> {
 				Poses pose = tracker.getTargetPos();
 				sender.sendPacket(new Payloads.ClientBoundPosePayload(uuid, pose == null ? -1 : pose.ordinal()));
 			}));
 			AttributeControl.setCommonAttributes(listener.player);
 			TeamControl.applyLobbyAttributes(listener.player);
-			listener.player.setGameMode(Game.running?GameType.SPECTATOR:GameType.ADVENTURE);
+			boolean shouldBecomeSpectator = Game.running&&Game.state!=GameState.PREGAME;
+			listener.player.setGameMode(shouldBecomeSpectator?GameType.SPECTATOR:GameType.ADVENTURE);
 			server.getScoreboard().removePlayerFromTeam(listener.player.getPlainTextName());
 
-			VoiceChatAccess.addPlayerToGroup(listener.player);
+			if (shouldBecomeSpectator)
+				VoiceChatAccess.addPlayerToGroup(listener.player);
 		});
 		ServerPlayConnectionEvents.DISCONNECT.register((listener, server) -> {
 			POSES.remove(listener.player.getUUID());
