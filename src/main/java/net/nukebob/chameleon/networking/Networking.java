@@ -91,6 +91,17 @@ public class Networking {
                 GameHud.seekers = payload.seekers();
             });
         });
+        ClientPlayNetworking.registerGlobalReceiver(Payloads.ClientBoundMissedSpotPayload.TYPE, ((payload, context) -> {
+            context.client().execute(() -> {
+                GameHud.missedSpotTimer = payload.timer();
+                if (!payload.rankings().isEmpty()) GameHud.missedSpots = payload.rankings();
+            });
+        }));
+        ClientPlayNetworking.registerGlobalReceiver(Payloads.ClientBoundMissedSpotEnableHunterPayload.TYPE, ((payload, context) -> {
+            context.client().execute(() -> {
+                GameHud.missedSpotEnabledForHunter = payload.enabled();
+            });
+        }));
     }
 
     //@Environment(EnvType.SERVER)

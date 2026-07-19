@@ -32,18 +32,19 @@ import net.nukebob.chameleon.networking.Skins;
 import net.nukebob.chameleon.sound.ChameleonSounds;
 import net.nukebob.chameleon.voicechat.VoiceChatAccess;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Set;
+import java.util.*;
 
 public class Game {
     public static GameMap map;
 
     public static boolean running = false;
     public static int whistleTime;
+    public static int missedSpotTime;
     private static GameState state;
     public static int time;
     private static Timer timer;
+
+    public static Map<UUID, Integer> missedSpotRanking = new HashMap<>();
 
     public static void start() {
         running = true;
@@ -57,6 +58,9 @@ public class Game {
 
         state = GameState.PREGAME;
         whistleTime = config.whistleFrequency;
+        missedSpotTime = config.missedSpotRankingUpdateFrequencyForHunters;
+        missedSpotRanking = new HashMap<>();
+        updateMissedSpot(config, true);
 
         TeamControl.nameTagVisibility(true);
 
@@ -68,6 +72,15 @@ public class Game {
                     whistle(config);
                     whistleTime = config.whistleFrequency;
                 }
+                missedSpotTime--;
+                if (missedSpotTime <=0) {
+                    missedSpotTime = config.missedSpotRankingUpdateFrequencyForHunters;
+                    updateMissedSpot(config, true);
+                } else {
+                    updateMissedSpot(config, false);
+                }
+
+                MissedSpot.missedSpotUpdate(MCChameleon.SERVER);
             }
 
             update(config);
@@ -80,9 +93,11 @@ public class Game {
             TeamControl.applyLobbyAttributes(player);
             player.getInventory().clearContent();
             ServerPlayNetworking.send(player, new Payloads.ClientBoundGameHudPlayersPayload(0,0));
+            ServerPlayNetworking.send(player, new Payloads.ClientBoundMissedSpotEnableHunterPayload(config.showMissedSpotsRankingToHunters));
         }
 
         TeamControl.getChameleonsTeam().setNameTagVisibility(config.isInfection?Team.Visibility.NEVER: Team.Visibility.HIDE_FOR_OTHER_TEAMS);
+        missedSpotRanking.clear();
     }
 
     public static int getNumberOfHiders() {
@@ -109,6 +124,43 @@ public class Game {
             };
             ServerPlayNetworking.send(player, new Payloads.ClientBoundGameHudUpdatePayload(time, maxTime, whistleTime, subtitle));
             updatePlayerCount();
+        }
+    }
+
+    private static List<MissedSpot.MissedSpotEntry> getMissedSpotList() {
+        List<Map.Entry<UUID, Integer>> sortedEntries = new ArrayList<>(missedSpotRanking.entrySet());
+
+        sortedEntries.sort(Map.Entry.comparingByValue(Comparator.reverseOrder()));
+
+        List<MissedSpot.MissedSpotEntry> missedSpotEntries = new ArrayList<>();
+
+        for (int i = 0; i < sortedEntries.size(); i++) {Map.Entry<UUID, Integer> mapEntry = sortedEntries.get(i);
+            UUID uuid = mapEntry.getKey();
+            int score = mapEntry.getValue();
+            int ranking = i + 1;
+
+            ServerPlayer player = MCChameleon.SERVER.getPlayerList().getPlayer(uuid);
+            String name = player != null ? player.getScoreboardName() : "Unknown";
+
+            boolean alive = player != null && !GameType.SPECTATOR.equals(player.gameMode());
+
+            missedSpotEntries.add(new MissedSpot.MissedSpotEntry(ranking, name, alive, score));
+        }
+
+        return missedSpotEntries;
+    }
+
+    public static void updateMissedSpot(GameConfig config, boolean all) {
+        for (ServerPlayer player : PlayerLookup.all(MCChameleon.SERVER)) {
+            if (!TeamControl.isChameleon(player.getTeam())) {
+                if (!config.showMissedSpotsRankingToHunters)
+                    continue;
+                if (!all) {
+                    ServerPlayNetworking.send(player, new Payloads.ClientBoundMissedSpotPayload(missedSpotTime, new ArrayList<>()));
+                    continue;
+                }
+            }
+            ServerPlayNetworking.send(player, new Payloads.ClientBoundMissedSpotPayload(missedSpotTime, getMissedSpotList()));
         }
     }
 
@@ -154,7 +206,7 @@ public class Game {
             ServerPlayNetworking.send(player, new Payloads.ClientBoundGameHudUpdatePayload(0, 0, 0, ""));
             ServerPlayNetworking.send(player, new Payloads.ClientBoundGameHudPlayersPayload(0,0));
 
-            VoiceChatAccess.addPlayerToGroup(player);
+            VoiceChatAccess.removePlayerFromGroup(player);
         }
     }
 
@@ -330,5 +382,9 @@ public class Game {
 
     public static GameState getState() {
         return state == null ?GameState.PREGAME:state;
+    }
+
+    public static void addMissedSpotPoints(UUID uuid, int points) {
+        missedSpotRanking.merge(uuid, points, Integer::sum);
     }
 }

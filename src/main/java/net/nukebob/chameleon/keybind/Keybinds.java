@@ -27,6 +27,7 @@ public class Keybinds {
     private static boolean wasCameraLockDown = false;
     private static boolean wasFreeCamDown = false;
     private static boolean wasToggleNamePlateDown = false;
+    private static boolean wasToggleMissedSpotRankingDown = false;
 
     private static boolean wasSwapSpectateTargetLeft = false;
     private static boolean wasSwapSpectateTargetRight = false;
@@ -77,6 +78,14 @@ public class Keybinds {
                     CATEGORY
             )
     );
+    public static final KeyMapping toggleMissedSpotRanking = KeyMappingHelper.registerKeyMapping(
+            new KeyMapping(
+                    "key.mc-chameleon.toggle_missed_spot_ranking",
+                    InputConstants.Type.KEYSYM,
+                    GLFW.GLFW_KEY_6,
+                    CATEGORY
+            )
+    );
 
     public static void init() {}
 
@@ -118,6 +127,7 @@ public class Keybinds {
         });
 
         wasToggleNamePlateDown = handleKeyEdge(Keybinds.toggleNameplate, wasToggleNamePlateDown, Keybinds::toggleNameplate);
+        wasToggleMissedSpotRankingDown = handleKeyEdge(Keybinds.toggleMissedSpotRanking, wasToggleMissedSpotRankingDown, Keybinds::toggleMissedSpotRanking);
 
         wasSwapSpectateTargetLeft = handleKeyEdge(client.options.keyAttack, wasSwapSpectateTargetLeft, () -> {
             if (client.level==null) return;
@@ -144,6 +154,9 @@ public class Keybinds {
     }
     public static void toggleNameplate() {
         MCChameleonClient.namePlatesDisplay = !MCChameleonClient.namePlatesDisplay;
+    }
+    public static void toggleMissedSpotRanking() {
+        MCChameleonClient.missedSpotRankingDisplay = !MCChameleonClient.missedSpotRankingDisplay;
     }
     public static void pose(Minecraft client) {
         UUID uuid = client.player.getUUID();

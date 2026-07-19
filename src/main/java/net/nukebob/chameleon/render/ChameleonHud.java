@@ -254,7 +254,7 @@ public class ChameleonHud {
         graphics.pose().popMatrix();
     }
 
-    private static void renderKey(GuiGraphicsExtractor graphics, String key, int x, int y, int width, int colour, int textColour) {
+    public static void renderKey(GuiGraphicsExtractor graphics, String key, int x, int y, int width, int colour, int textColour) {
         if (key.contains("mouse/")) {
             Identifier texture = MCChameleon.id(key);
             graphics.blitSprite(RenderPipelines.GUI_TEXTURED, texture, x, y, width, width, colour);

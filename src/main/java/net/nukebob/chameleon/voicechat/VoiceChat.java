@@ -57,6 +57,14 @@ public class VoiceChat implements VoicechatPlugin {
         }
     }
 
+    protected static void removePlayerFromGroup(ServerPlayer player) {
+        if (VoiceChat.SERVER_API!=null) {
+            VoicechatConnection connection = VoiceChat.SERVER_API.getConnectionOf(player.getUUID());
+            if (connection!=null)
+                connection.setGroup(null);
+        }
+    }
+
     protected static boolean isMuted() {
         return CLIENT_API.isMuted();
     }

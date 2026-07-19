@@ -25,6 +25,9 @@ public class GameConfig {
     public int answerCheckTime = 30;
     public float hunterPercent = 0.2f;
 
+    public boolean showMissedSpotsRankingToHunters = true;
+    public int missedSpotRankingUpdateFrequencyForHunters = 30;
+
     public boolean isInfection = false;
     public boolean shadows = false;
     public boolean worldAnimations = false;

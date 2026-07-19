@@ -44,6 +44,7 @@ public class MCChameleonClient implements ClientModInitializer {
     public static boolean wasJumping = false;
 
     public static boolean namePlatesDisplay = true;
+    public static boolean missedSpotRankingDisplay = true;
 
     public static final Map<UUID, PoseTracker> POSES = new HashMap<>();
 

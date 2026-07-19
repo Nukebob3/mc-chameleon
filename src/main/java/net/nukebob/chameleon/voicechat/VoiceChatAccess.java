@@ -14,6 +14,9 @@ public class VoiceChatAccess {
     public static void addPlayerToGroup(ServerPlayer player) {
         if (INSTALLED) VoiceChat.addPlayerToGroup(player);
     }
+    public static void removePlayerFromGroup(ServerPlayer player) {
+        if (INSTALLED) VoiceChat.removePlayerFromGroup(player);
+    }
 
     public static void renderGui(GuiGraphicsExtractor graphics, DeltaTracker deltaTracker) {
         if (INSTALLED&&!VoiceChat.isGuiHidden()&&!VoiceChat.isDisconnected()) {

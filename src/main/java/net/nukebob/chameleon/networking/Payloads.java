@@ -9,11 +9,13 @@ import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
 import net.minecraft.resources.Identifier;
 import net.minecraft.world.phys.Vec3;
 import net.nukebob.chameleon.MCChameleon;
+import net.nukebob.chameleon.gameplay.MissedSpot;
 import net.nukebob.chameleon.gameplay.Poses;
 import net.nukebob.chameleon.texture.ColourLocation;
 import org.jspecify.annotations.NonNull;
 
 import java.util.Arrays;
+import java.util.List;
 import java.util.UUID;
 
 public class Payloads {
@@ -176,6 +178,42 @@ public class Payloads {
         }
     }
 
+    public record ClientBoundMissedSpotPayload(int timer, List<MissedSpot.MissedSpotEntry> rankings) implements CustomPacketPayload {
+        public static final Identifier MISSED_SPOT = MCChameleon.id("missed_spot");
+
+        public static final CustomPacketPayload.Type<ClientBoundMissedSpotPayload> TYPE = new CustomPacketPayload.Type<>(MISSED_SPOT);
+
+        public static final StreamCodec<RegistryFriendlyByteBuf, ClientBoundMissedSpotPayload> CODEC = StreamCodec.composite(
+                ByteBufCodecs.INT,
+                ClientBoundMissedSpotPayload::timer,
+                MissedSpot.MissedSpotEntry.STREAM_CODEC.apply(ByteBufCodecs.list()),
+                ClientBoundMissedSpotPayload::rankings,
+                ClientBoundMissedSpotPayload::new
+        );
+
+        @Override
+        public @NonNull Type<? extends CustomPacketPayload> type() {
+            return TYPE;
+        }
+    }
+
+    public record ClientBoundMissedSpotEnableHunterPayload(boolean enabled) implements CustomPacketPayload {
+        public static final Identifier MISSED_SPOT = MCChameleon.id("missed_spot_enabled_hunter");
+
+        public static final CustomPacketPayload.Type<ClientBoundMissedSpotEnableHunterPayload> TYPE = new CustomPacketPayload.Type<>(MISSED_SPOT);
+
+        public static final StreamCodec<RegistryFriendlyByteBuf, ClientBoundMissedSpotEnableHunterPayload> CODEC = StreamCodec.composite(
+                ByteBufCodecs.BOOL,
+                ClientBoundMissedSpotEnableHunterPayload::enabled,
+                ClientBoundMissedSpotEnableHunterPayload::new
+        );
+
+        @Override
+        public @NonNull Type<? extends CustomPacketPayload> type() {
+            return TYPE;
+        }
+    }
+
     //
 
     public record ServerBoundUpdatePixelsPayload(int[] pixels) implements CustomPacketPayload {
@@ -282,6 +320,9 @@ public class Payloads {
 
         PayloadTypeRegistry.clientboundPlay().register(ClientBoundGameHudUpdatePayload.TYPE, ClientBoundGameHudUpdatePayload.CODEC);
         PayloadTypeRegistry.clientboundPlay().register(ClientBoundGameHudPlayersPayload.TYPE, ClientBoundGameHudPlayersPayload.CODEC);
+
+        PayloadTypeRegistry.clientboundPlay().register(ClientBoundMissedSpotPayload.TYPE, ClientBoundMissedSpotPayload.CODEC);
+        PayloadTypeRegistry.clientboundPlay().register(ClientBoundMissedSpotEnableHunterPayload.TYPE, ClientBoundMissedSpotEnableHunterPayload.CODEC);
 
         //c2s
         PayloadTypeRegistry.serverboundPlay().register(ServerBoundUpdatePixelsPayload.TYPE, ServerBoundUpdatePixelsPayload.CODEC);
