@@ -77,7 +77,7 @@ public class Game {
                     missedSpotTime = config.missedSpotRankingUpdateFrequencyForHunters;
                     updateMissedSpot(config, true);
                 } else {
-                    updateMissedSpot(config, false);
+                    if (!config.isInfection) updateMissedSpot(config, false);
                 }
 
                 MissedSpot.missedSpotUpdate(MCChameleon.SERVER);
